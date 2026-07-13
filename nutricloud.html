@@ -173,12 +173,12 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                     </div>
                     <div>
-                        <h4 class="text-sm font-bold text-slate-800">Sincronización en la nube desactivada</h4>
-                        <p class="text-xs text-slate-500 mt-0.5">Introduce tu Client ID de Google Drive en los ajustes para disfrutar de almacenamiento seguro automático y multi-dispositivo.</p>
+                        <h4 class="text-sm font-bold text-slate-800">Cloud Sync Disabled</h4>
+                        <p class="text-xs text-slate-500 mt-0.5">Enter your Google Drive Client ID in settings to enjoy automatic secure multi-device storage.</p>
                     </div>
                 </div>
                 <button onclick="switchTab('tab-io')" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0">
-                    Ir a Ajustes de Nube
+                    Go to Cloud Settings
                 </button>
             </div>
 
@@ -362,12 +362,40 @@
 
                             <div>
                                 <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Dietary Restrictions</label>
-                                <select id="prof-diet" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                                <select id="prof-diet" onchange="updateClinicalFocusPreview(this.value)" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
                                     <option value="none" selected>None</option>
                                     <option value="pescatarian">Pescatarian</option>
                                     <option value="vegetarian">Vegetarian</option>
                                     <option value="vegan">Vegan</option>
+                                    <option value="mediterranean">Mediterranean</option>
+                                    <option value="keto">Ketogenic (Keto)</option>
+                                    <option value="paleo">Paleo</option>
                                 </select>
+                            </div>
+                            
+                            <!-- Clinical Focus Section -->
+                            <div class="md:col-span-2 bg-emerald-50 rounded-2xl p-5 border border-emerald-100 mt-2">
+                                <h3 class="font-bold text-emerald-800 text-sm mb-2 flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                                    Clinical Focus: <span id="clinical-focus-title">Standard Diet</span>
+                                </h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs mt-3">
+                                    <div>
+                                        <span class="font-bold text-emerald-700 block mb-1">Pros</span>
+                                        <ul id="clinical-focus-pros" class="list-disc list-inside text-emerald-600 space-y-1">
+                                            <li>Balanced macronutrients</li>
+                                            <li>Easy to maintain long-term</li>
+                                            <li>No food groups excluded</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <span class="font-bold text-amber-600 block mb-1">Cons / Considerations</span>
+                                        <ul id="clinical-focus-cons" class="list-disc list-inside text-amber-700 space-y-1">
+                                            <li>Requires strict portion control</li>
+                                            <li>Easy to overeat processed foods</li>
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -582,7 +610,7 @@
                         <div>
                             <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Google OAuth Client ID</label>
                             <div class="flex flex-col sm:flex-row gap-2.5">
-                                <input type="text" id="google-client-id" placeholder="Ej: XXXXXXXXXXXX-XXXXXXXXXXXXXXXX.apps.googleusercontent.com" class="flex-grow bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                                <input type="text" id="google-client-id" placeholder="Ex: XXXXXXXXXXXX-XXXXXXXXXXXXXXXX.apps.googleusercontent.com" class="flex-grow bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
                                 <button onclick="saveClientID()" class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all shrink-0">
                                     Save Client ID
                                 </button>
@@ -640,7 +668,7 @@
                 
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Food Name</label>
-                    <input type="text" id="modal-food-name" placeholder="Ej. Lomo de Atún" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                    <input type="text" id="modal-food-name" placeholder="Ex. Tuna Loin" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
                 </div>
 
                 <div>
@@ -909,7 +937,7 @@
             dotEl.className = `w-2.5 h-2.5 rounded-full ${dotBgClass}`;
 
             if (isCloudConnected) {
-                btnEl.innerHTML = `✓ Connected a la Nube`;
+                btnEl.innerHTML = `✓ Connected to Cloud`;
                 btnEl.classList.remove('bg-white', 'text-emerald-700');
                 btnEl.classList.add('bg-emerald-800', 'text-white');
             } else {
@@ -1056,6 +1084,57 @@
             }
         }
 
+        function updateClinicalFocusPreview(dietValue) {
+            const dietInfo = {
+                'none': {
+                    title: 'Standard Diet',
+                    pros: ['Balanced macronutrients', 'Easy to maintain long-term', 'No food groups excluded'],
+                    cons: ['Requires strict portion control', 'Easy to overeat processed foods']
+                },
+                'pescatarian': {
+                    title: 'Pescatarian',
+                    pros: ['High in Omega-3 fatty acids', 'Good cardiovascular support', 'Lean protein sources'],
+                    cons: ['Potential heavy metal accumulation', 'Requires varied seafood sourcing']
+                },
+                'vegetarian': {
+                    title: 'Vegetarian',
+                    pros: ['High fiber and micronutrients', 'Lower risk of heart disease', 'Cost-effective'],
+                    cons: ['Potential B12/Iron deficiency', 'Harder to hit high protein goals']
+                },
+                'vegan': {
+                    title: 'Vegan',
+                    pros: ['Excellent cardiovascular profile', 'High antioxidant intake', 'Ethical/environmental benefits'],
+                    cons: ['Requires B12 supplementation', 'Careful protein combining needed', 'Lower calcium/iron bioavailability']
+                },
+                'mediterranean': {
+                    title: 'Mediterranean',
+                    pros: ['Top-ranked for heart health', 'Rich in healthy mono-unsaturated fats', 'High longevity correlation'],
+                    cons: ['Moderate carbohydrate intake', 'Can be expensive (olive oil/fish)']
+                },
+                'keto': {
+                    title: 'Ketogenic (Keto)',
+                    pros: ['Rapid initial weight loss', 'High satiety from fats', 'Improves insulin sensitivity'],
+                    cons: ['"Keto flu" adaptation phase', 'Very restrictive', 'Potential micronutrient gaps']
+                },
+                'paleo': {
+                    title: 'Paleo',
+                    pros: ['Zero processed foods', 'High protein and satiety', 'Stabilizes blood sugar'],
+                    cons: ['Excludes healthy grains/dairy', 'Can be high in saturated fats', 'Expensive to maintain']
+                }
+            };
+            
+            const currentDietInfo = dietInfo[dietValue] || dietInfo['none'];
+            const titleEl = document.getElementById('clinical-focus-title');
+            const prosEl = document.getElementById('clinical-focus-pros');
+            const consEl = document.getElementById('clinical-focus-cons');
+            
+            if (titleEl && prosEl && consEl) {
+                titleEl.innerText = currentDietInfo.title;
+                prosEl.innerHTML = currentDietInfo.pros.map(p => `<li>${p}</li>`).join('');
+                consEl.innerHTML = currentDietInfo.cons.map(c => `<li>${c}</li>`).join('');
+            }
+        }
+
         // REPRODUCCIÓN COMPLETA DE INTERFAZ
         function updateUI() {
             // Cabecera e Inputs de Resumen
@@ -1089,6 +1168,9 @@
             if (AppState.profile.objective === 'surplus') objectiveText = "Muscle Gain Surplus";
             const dashGoalLabel = document.getElementById('dash-goal-label');
             if (dashGoalLabel) dashGoalLabel.innerText = objectiveText;
+
+            // Actualizar Clinical Focus
+            updateClinicalFocusPreview(AppState.profile.diet || 'none');
 
             // Recálculos visuales en el perfil
             document.getElementById('calc-bmr').innerText = `${AppState.profile.bmr.toLocaleString()} kcal`;
@@ -1161,6 +1243,16 @@
             } else if (diet === 'vegetarian') {
                 carbPct += 0.05;
                 protPct -= 0.05;
+            } else if (diet === 'mediterranean') {
+                fatPct += 0.05;
+                carbPct -= 0.05;
+            } else if (diet === 'keto') {
+                carbPct = 0.05;
+                protPct = 0.20;
+                fatPct = 0.75;
+            } else if (diet === 'paleo') {
+                carbPct -= 0.10;
+                protPct += 0.10;
             }
 
             const targetProtein = Math.round((targetCalories * protPct) / 4);
@@ -1174,7 +1266,7 @@
 
             triggerDataMutation();
             updateUI();
-            showToast('Perfil clínico actualizado y sincronizado en la nube.');
+            showToast('Clinical profile updated and synced to cloud.');
             switchTab('tab-dashboard');
         }
 
