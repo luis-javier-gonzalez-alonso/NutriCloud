@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NutriCloud - Despensa & Nutrición Inteligente</title>
+    <title>NutriCloud - Smart Pantry & Nutrition</title>
     <!-- Tailwind CSS para el diseño premium -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Fuente Plus Jakarta Sans -->
@@ -35,6 +35,45 @@
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
 
+    <!-- STARTUP MODAL (Forces setup if no local data) -->
+    <div id="startup-modal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-[100] p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden">
+            <div class="p-8 text-center">
+                <div class="mx-auto w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 mb-6">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
+                </div>
+                <h2 class="text-2xl font-extrabold text-slate-800 mb-2">Welcome to NutriCloud</h2>
+                <p class="text-sm text-slate-500 mb-8">No local data found. Please connect your Google Drive to sync your data, or import a backup file.</p>
+                
+                <div class="flex flex-col gap-4">
+                    <div class="text-left bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Option 1: Google Drive Sync</label>
+                        <input type="text" id="startup-client-id" placeholder="Google OAuth Client ID" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/20 mb-3">
+                        <button onclick="startupConnectDrive()" id="startup-btn-drive" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h12m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                            Connect Google Drive
+                        </button>
+                    </div>
+
+                    <div class="relative flex py-2 items-center">
+                        <div class="flex-grow border-t border-slate-200"></div>
+                        <span class="flex-shrink-0 mx-4 text-slate-400 text-xs font-semibold uppercase">OR</span>
+                        <div class="flex-grow border-t border-slate-200"></div>
+                    </div>
+
+                    <div class="text-left bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Option 2: Manual Backup</label>
+                        <textarea id="startup-json-area" rows="3" placeholder="Paste your NutriCloud JSON backup here..." class="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/20 mb-3"></textarea>
+                        <button onclick="startupImportJSON()" class="w-full bg-slate-800 hover:bg-slate-900 text-white px-5 py-3 rounded-xl text-sm font-bold transition-all shadow-sm">
+                            Import JSON Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <!-- CABECERA PRINCIPAL (SaaS Premium) -->
     <header class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-md sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 py-3.5 flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -50,7 +89,7 @@
                         NutriCloud 
                         <span class="text-[10px] font-bold px-2 py-0.5 bg-emerald-500 rounded-full text-white border border-emerald-400">PRO v2.5</span>
                     </h1>
-                    <p class="text-xs text-emerald-100/90 font-medium">Plataforma Nutricional & Despensa Multi-Dispositivo</p>
+                    <p class="text-xs text-emerald-100/90 font-medium">Multi-Device Nutritional Platform & Pantry</p>
                 </div>
             </div>
             
@@ -58,12 +97,12 @@
             <div class="flex items-center gap-3">
                 <div id="sync-status-header" class="flex items-center gap-2 px-3 py-1.5 bg-black/15 rounded-xl border border-white/5 text-xs text-emerald-100 font-semibold backdrop-blur-sm">
                     <span class="w-2.5 h-2.5 rounded-full bg-amber-400" id="sync-status-dot"></span>
-                    <span id="sync-status-text">Desconectado de la Nube</span>
+                    <span id="sync-status-text">Disconnected from Cloud</span>
                 </div>
                 
                 <button id="btn-cloud-connect" onclick="toggleCloudAuth()" class="bg-white text-emerald-700 hover:bg-emerald-50 px-4 py-2 rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-1.5">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h12m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
-                    Conectar Google Drive
+                    Connect Google Drive
                 </button>
             </div>
         </div>
@@ -75,36 +114,36 @@
         <!-- BARRA LATERAL - MENÚ DE NAVEGACIÓN -->
         <aside class="lg:col-span-1 flex flex-col gap-4">
             <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex flex-col gap-1.5">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider px-3 mb-2 block">Módulos</span>
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider px-3 mb-2 block">Modules</span>
                 
                 <button onclick="switchTab('tab-dashboard')" id="btn-tab-dashboard" class="nav-btn active flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all text-slate-600 hover:bg-slate-50 hover:text-emerald-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                    Resumen General
+                    Dashboard
                 </button>
 
                 <button onclick="switchTab('tab-profile')" id="btn-tab-profile" class="nav-btn flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all text-slate-600 hover:bg-slate-50 hover:text-emerald-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                    Perfil ("Profile")
+                    Profile
                 </button>
 
                 <button onclick="switchTab('tab-almacen')" id="btn-tab-almacen" class="nav-btn flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all text-slate-600 hover:bg-slate-50 hover:text-emerald-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                    Almacén / Despensa
+                    Inventory / Pantry
                 </button>
 
                 <button onclick="switchTab('tab-planificador')" id="btn-tab-planificador" class="nav-btn flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all text-slate-600 hover:bg-slate-50 hover:text-emerald-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                    Planificador /menu-diario
+                    Meal Planner
                 </button>
 
                 <button onclick="switchTab('tab-registro')" id="btn-tab-registro" class="nav-btn flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all text-slate-600 hover:bg-slate-50 hover:text-emerald-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    Registro Diario
+                    Daily Log
                 </button>
 
                 <button onclick="switchTab('tab-io')" id="btn-tab-io" class="nav-btn flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all text-slate-600 hover:bg-slate-50 hover:text-emerald-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                    Ajustes de Nube & Backup
+                    Cloud & Backup Settings
                 </button>
             </div>
 
@@ -148,12 +187,12 @@
                 <!-- Welcome Banner -->
                 <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h2 class="text-xl font-extrabold text-slate-800 tracking-tight">Panel de Control Nutricional</h2>
-                        <p class="text-slate-500 text-xs mt-1">Hoy es 13 de Julio de 2026. Supervisión dietética y despensa conectada en tiempo real.</p>
+                        <h2 class="text-xl font-extrabold text-slate-800 tracking-tight">Nutritional Dashboard</h2>
+                        <p class="text-slate-500 text-xs mt-1">Today is 13 de Julio de 2026. Real-time dietary supervision and connected pantry.</p>
                     </div>
                     <button onclick="switchTab('tab-planificador')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-sm transition-all flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                        Ejecutar /menu-diario
+                        Run Meal Planner
                     </button>
                 </div>
 
@@ -161,19 +200,19 @@
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
                         <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Calorías Diarias</span>
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Daily Calories</span>
                             <span class="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></span>
                         </div>
                         <div class="flex items-baseline gap-1">
                             <span id="dash-cal-num" class="text-2xl font-extrabold text-slate-800">2,143</span>
                             <span class="text-xs text-slate-400 font-semibold">kcal</span>
                         </div>
-                        <p class="text-[10px] text-emerald-600 font-bold mt-2">Déficit del 20% aplicado</p>
+                        <p class="text-[10px] text-emerald-600 font-bold mt-2">20% Deficit Applied</p>
                     </div>
 
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
                         <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Proteína</span>
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Protein</span>
                             <span class="p-1.5 bg-blue-50 text-blue-600 rounded-lg"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 9.172V5L8 4z"></path></svg></span>
                         </div>
                         <div class="flex items-baseline gap-1">
@@ -185,26 +224,26 @@
 
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
                         <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Carbohidratos</span>
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Carbohydrates</span>
                             <span class="p-1.5 bg-amber-50 text-amber-600 rounded-lg"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.364l-.707-.707M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></span>
                         </div>
                         <div class="flex items-baseline gap-1">
                             <span id="dash-carb-num" class="text-2xl font-extrabold text-slate-800">235</span>
                             <span class="text-xs text-slate-400 font-semibold">g</span>
                         </div>
-                        <p class="text-[10px] text-amber-600 font-bold mt-2">Integrales y con alta fibra</p>
+                        <p class="text-[10px] text-amber-600 font-bold mt-2">Whole grains and high fiber</p>
                     </div>
 
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
                         <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Grasas Buenas</span>
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Healthy Fats</span>
                             <span class="p-1.5 bg-teal-50 text-teal-600 rounded-lg"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg></span>
                         </div>
                         <div class="flex items-baseline gap-1">
                             <span id="dash-fat-num" class="text-2xl font-extrabold text-slate-800">71</span>
                             <span class="text-xs text-slate-400 font-semibold">g</span>
                         </div>
-                        <p class="text-[10px] text-teal-600 font-bold mt-2">Omega-3 y Monoinsaturadas</p>
+                        <p class="text-[10px] text-teal-600 font-bold mt-2">Omega-3 and Monounsaturated</p>
                     </div>
                 </div>
 
@@ -214,9 +253,9 @@
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
                                 <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                                Alertas de Despensa (Stock Crítico)
+                                Pantry Alerts (Low Stock)
                             </h3>
-                            <button onclick="switchTab('tab-almacen')" class="text-xs font-bold text-emerald-600 hover:text-emerald-700">Ver inventario →</button>
+                            <button onclick="switchTab('tab-almacen')" class="text-xs font-bold text-emerald-600 hover:text-emerald-700">View inventory →</button>
                         </div>
                         <div id="alerts-container" class="flex flex-col gap-2.5">
                             <!-- Populated dynamically -->
@@ -226,8 +265,8 @@
                     <!-- Progress Gauge -->
                     <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between">
                         <div>
-                            <h3 class="font-bold text-slate-800 text-sm mb-1">Evolución de Peso</h3>
-                            <p class="text-xs text-slate-400">Trayectoria saludable para el control del colesterol</p>
+                            <h3 class="font-bold text-slate-800 text-sm mb-1">Weight Progress</h3>
+                            <p class="text-xs text-slate-400">Healthy trajectory for your goals</p>
                         </div>
                         <div class="my-4 flex flex-col items-center">
                             <div class="relative w-28 h-28 flex items-center justify-center">
@@ -237,19 +276,19 @@
                                 </svg>
                                 <div class="text-center">
                                     <span class="block text-2xl font-extrabold text-slate-800">100.6</span>
-                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Kg actuales</span>
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Current Kg</span>
                                 </div>
                             </div>
                         </div>
                         <div class="bg-slate-50 p-3 rounded-xl text-center">
-                            <span class="text-xs font-bold text-slate-500">Masa Magra Estimada: <strong class="text-slate-800 font-extrabold">68 Kg</strong></span>
+                            <span class="text-xs font-bold text-slate-500">Estimated Lean Mass: <strong class="text-slate-800 font-extrabold">68 Kg</strong></span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Consumption Progress Mini-Chart -->
                 <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                    <h3 class="font-bold text-slate-800 text-sm mb-4">Progreso Histórico de Ingesta Calórica</h3>
+                    <h3 class="font-bold text-slate-800 text-sm mb-4">Historical Caloric Intake Progress</h3>
                     <div class="h-48 flex items-end justify-between gap-2 pt-6 px-2 relative">
                         <div class="absolute inset-0 flex flex-col justify-between pointer-events-none text-[10px] text-slate-300">
                             <div class="border-b border-dashed border-slate-100 w-full pb-1">2500 kcal</div>
@@ -267,48 +306,67 @@
             <div id="tab-profile" class="tab-content hidden flex flex-col gap-6">
                 <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
                     <div class="border-b border-slate-100 pb-4 mb-6">
-                        <h2 class="text-lg font-extrabold text-slate-800 tracking-tight">Mis Datos Biométricos & Diagnóstico</h2>
-                        <p class="text-xs text-slate-400">Configura tus variables para el cálculo preciso del TDEE y BMR.</p>
+                        <h2 class="text-lg font-extrabold text-slate-800 tracking-tight">Biometric Data & Settings</h2>
+                        <p class="text-xs text-slate-400">Configure your variables for accurate TDEE and BMR calculation.</p>
                     </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="flex flex-col gap-4">
                             <div>
-                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Género</label>
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Gender</label>
                                 <select id="prof-gender" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
-                                    <option value="Hombre" selected>Hombre</option>
-                                    <option value="Mujer">Mujer</option>
+                                    <option value="Male" selected>Male</option>
+                                    <option value="Female">Female</option>
                                 </select>
                             </div>
 
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Peso Actual (Kg)</label>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Current Weight (Kg)</label>
                                     <input type="number" step="0.1" id="prof-weight" value="100.6" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Altura (cm)</label>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Height (cm)</label>
                                     <input type="number" id="prof-height" value="178" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
                                 </div>
                             </div>
 
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Masa Magra (Kg)</label>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Lean Mass (Kg)</label>
                                     <input type="number" step="0.1" id="prof-lean" value="68.0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Edad (años)</label>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Age (years)</label>
                                     <input type="number" id="prof-age" value="35" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
                                 </div>
                             </div>
 
                             <div>
-                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Nivel de Actividad</label>
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Activity Level</label>
                                 <select id="prof-activity" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
-                                    <option value="light" selected>Ligero (Actividad de oficina diaria / sin ejercicio duro)</option>
-                                    <option value="moderate">Moderado (Entrenamientos ligeros 2-3 veces/sem)</option>
-                                    <option value="active">Activo (Deporte duro o trabajo físico diario)</option>
+                                    <option value="light" selected>Light (Office work / no hard exercise)</option>
+                                    <option value="moderate">Moderate (Light workouts 2-3 times/week)</option>
+                                    <option value="active">Active (Hard sports or physical job)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Goal / Objective</label>
+                                <select id="prof-objective" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                                    <option value="deficit">Weight Loss (Deficit)</option>
+                                    <option value="maintenance" selected>Maintenance</option>
+                                    <option value="surplus">Muscle Gain (Surplus)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Dietary Restrictions</label>
+                                <select id="prof-diet" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                                    <option value="none" selected>None</option>
+                                    <option value="pescatarian">Pescatarian</option>
+                                    <option value="vegetarian">Vegetarian</option>
+                                    <option value="vegan">Vegan</option>
                                 </select>
                             </div>
                         </div>
@@ -316,26 +374,26 @@
                         <!-- Panel de resultados de perfil -->
                         <div class="bg-slate-50 rounded-2xl p-6 border border-slate-150 flex flex-col justify-between">
                             <div>
-                                <h3 class="font-bold text-slate-700 text-sm mb-4">Métricas Nutricionales Derivadas</h3>
+                                <h3 class="font-bold text-slate-700 text-sm mb-4">Derived Nutritional Metrics</h3>
                                 <div class="flex flex-col gap-3">
                                     <div class="flex justify-between text-sm">
-                                        <span class="text-slate-500">Tasa Metabólica Basal (BMR):</span>
+                                        <span class="text-slate-500">Basal Metabolic Rate (BMR):</span>
                                         <span id="calc-bmr" class="font-semibold text-slate-800">1,948 kcal</span>
                                     </div>
                                     <div class="flex justify-between text-sm">
-                                        <span class="text-slate-500">Gasto Total Diario (TDEE):</span>
+                                        <span class="text-slate-500">Total Daily Energy Expenditure (TDEE):</span>
                                         <span id="calc-tdee" class="font-semibold text-slate-800">2,679 kcal</span>
                                     </div>
                                     <div class="border-t border-slate-200 my-2"></div>
                                     <div class="flex justify-between text-base font-bold text-emerald-700">
-                                        <span>Planificación Diaria (-20% Deficit):</span>
+                                        <span>Daily Target:</span>
                                         <span id="calc-target">2,143 kcal</span>
                                     </div>
                                 </div>
                             </div>
 
                             <button onclick="saveProfile()" class="w-full mt-6 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl text-sm font-semibold shadow-sm transition-all duration-300">
-                                Recalcular & Sincronizar Objetivos
+                                Recalculate & Sync Goals
                             </button>
                         </div>
                     </div>
@@ -347,25 +405,25 @@
                 <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                         <div>
-                            <h2 class="text-lg font-extrabold text-slate-800 tracking-tight">Inventario de Despensa</h2>
-                            <p class="text-xs text-slate-400">Control de alimentos en casa y límites mínimos para listas de compra.</p>
+                            <h2 class="text-lg font-extrabold text-slate-800 tracking-tight">Pantry Inventory</h2>
+                            <p class="text-xs text-slate-400">Home food control and minimum thresholds for shopping lists.</p>
                         </div>
                         <button onclick="openAddFoodModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                            Añadir Alimento
+                            Add Food Item
                         </button>
                     </div>
 
                     <div class="flex flex-col sm:flex-row gap-3">
-                        <input type="text" id="food-search" oninput="filterFoodTable()" placeholder="Buscar en despensa..." class="flex-grow bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                        <input type="text" id="food-search" oninput="filterFoodTable()" placeholder="Search pantry..." class="flex-grow bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
                         <select id="category-filter" onchange="filterFoodTable()" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
-                            <option value="all">Todas las Categorías</option>
-                            <option value="Huevos/Lácteos">Huevos/Lácteos</option>
-                            <option value="Pescados">Pescados</option>
-                            <option value="Carbohidratos">Carbohidratos</option>
-                            <option value="Grasas Saludables">Grasas Saludables</option>
-                            <option value="Vegetales">Vegetales</option>
-                            <option value="Frutas">Frutas</option>
+                            <option value="all">All Categories</option>
+                            <option value="Eggs/Dairy">Eggs/Dairy</option>
+                            <option value="Fish/Seafood">Fish/Seafood</option>
+                            <option value="Carbohydrates">Carbohydrates</option>
+                            <option value="Healthy Fats">Healthy Fats</option>
+                            <option value="Vegetables">Vegetables</option>
+                            <option value="Fruits">Fruits</option>
                         </select>
                     </div>
                 </div>
@@ -376,12 +434,12 @@
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-slate-50 text-xs font-bold text-slate-400 uppercase border-b border-slate-100">
-                                    <th class="px-6 py-4">Ingrediente</th>
-                                    <th class="px-6 py-4">Categoría</th>
-                                    <th class="px-6 py-4 text-center">Disponible</th>
-                                    <th class="px-6 py-4 text-center">Umbral Mínimo</th>
-                                    <th class="px-6 py-4 text-center">Estado</th>
-                                    <th class="px-6 py-4 text-right">Acción</th>
+                                    <th class="px-6 py-4">Ingredient</th>
+                                    <th class="px-6 py-4">Category</th>
+                                    <th class="px-6 py-4 text-center">Available</th>
+                                    <th class="px-6 py-4 text-center">Min Threshold</th>
+                                    <th class="px-6 py-4 text-center">Status</th>
+                                    <th class="px-6 py-4 text-right">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="inventory-tbody" class="divide-y divide-slate-50 text-sm text-slate-700">
@@ -399,14 +457,14 @@
                         <div class="p-2.5 bg-emerald-50 rounded-xl">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
                         </div>
-                        <h2 class="text-lg font-bold text-slate-800">Planificador de Menú Automático</h2>
+                        <h2 class="text-lg font-bold text-slate-800">Automatic Meal Planner</h2>
                     </div>
                     <p class="text-xs text-slate-500 leading-relaxed">
-                        Este módulo escanea tu stock real actual, diseña un plan completo de 3 comidas + 1 snack pescatariano que se ajuste exactamente a tus macros del día y descuenta los gramos utilizados al consumirlo.
+                        This module scans your actual stock, designs a complete meal plan that fits your macros perfectly, and deducts the used amounts from your pantry.
                     </p>
                     <div class="mt-4">
                         <button onclick="generatePlanSuggestion()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-sm transition-all flex items-center gap-2">
-                            <span>⚡ Simular /menu-diario desde Stock</span>
+                            <span>⚡ Simulate Daily Plan from Stock</span>
                         </button>
                     </div>
                 </div>
@@ -416,22 +474,22 @@
                     <!-- Resumen del día -->
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
-                            <span class="block text-xs text-slate-400 font-bold uppercase mb-1">Calorías Totales</span>
+                            <span class="block text-xs text-slate-400 font-bold uppercase mb-1">Total Calories</span>
                             <span id="sug-cal" class="text-xl font-extrabold text-slate-800">--</span>
                             <span class="text-[10px] block text-emerald-600 font-bold" id="sug-cal-diff">/ 2,143 kcal</span>
                         </div>
                         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
-                            <span class="block text-xs text-slate-400 font-bold uppercase mb-1">Proteínas</span>
+                            <span class="block text-xs text-slate-400 font-bold uppercase mb-1">Proteins</span>
                             <span id="sug-prot" class="text-xl font-extrabold text-slate-800">--</span>
                             <span class="text-[10px] block text-blue-600 font-bold" id="sug-prot-diff">/ 140g</span>
                         </div>
                         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
-                            <span class="block text-xs text-slate-400 font-bold uppercase mb-1">Carbohidratos</span>
+                            <span class="block text-xs text-slate-400 font-bold uppercase mb-1">Carbohydrates</span>
                             <span id="sug-carb" class="text-xl font-extrabold text-slate-800">--</span>
                             <span class="text-[10px] block text-amber-600 font-bold" id="sug-carb-diff">/ 235g</span>
                         </div>
                         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
-                            <span class="block text-xs text-slate-400 font-bold uppercase mb-1">Grasas</span>
+                            <span class="block text-xs text-slate-400 font-bold uppercase mb-1">Fats</span>
                             <span id="sug-fat" class="text-xl font-extrabold text-slate-800">--</span>
                             <span class="text-[10px] block text-teal-600 font-bold" id="sug-fat-diff">/ 71g</span>
                         </div>
@@ -445,11 +503,11 @@
                     <!-- Confirmación del menú -->
                     <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-150 flex flex-col md:flex-row justify-between items-center gap-4">
                         <div>
-                            <h3 class="font-bold text-slate-800 text-sm">¿Consumiste estos platos hoy?</h3>
-                            <p class="text-xs text-slate-400 mt-0.5">Esto descontará los gramos indicados de tu despensa y registrará la entrada en el diario.</p>
+                            <h3 class="font-bold text-slate-800 text-sm">Did you consume these meals today?</h3>
+                            <p class="text-xs text-slate-400 mt-0.5">This will deduct the amounts from your pantry and log them in your diary.</p>
                         </div>
                         <button onclick="confirmSuggestedMenu()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-300">
-                            ✓ Confirmar Registro y Actualizar Despensa
+                            ✓ Confirm Log and Update Pantry
                         </button>
                     </div>
                 </div>
@@ -459,8 +517,8 @@
                     <div class="p-4.5 bg-emerald-50 rounded-full text-emerald-600 mb-4">
                         <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                     </div>
-                    <h3 class="text-base font-bold text-slate-800 mb-1">Cálculo de menú en tiempo real</h3>
-                    <p class="text-xs text-slate-400 max-w-md">Haz clic en el botón de simulación para analizar tu almacén y armar tu nutrición del día automáticamente.</p>
+                    <h3 class="text-base font-bold text-slate-800 mb-1">Real-time Meal Calculation</h3>
+                    <p class="text-xs text-slate-400 max-w-md">Click the simulate button to analyze your pantry and build your nutrition plan automatically.</p>
                 </div>
             </div>
 
@@ -469,8 +527,8 @@
                 <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
                     <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
                         <div>
-                            <h2 class="text-lg font-bold text-slate-800">Historial Diario de Nutrientes</h2>
-                            <p class="text-xs text-slate-400">Verifica tu consistencia calórica acumulada.</p>
+                            <h2 class="text-lg font-bold text-slate-800">Daily Nutrient History</h2>
+                            <p class="text-xs text-slate-400">Verify your accumulated caloric consistency.</p>
                         </div>
                     </div>
 
@@ -478,12 +536,12 @@
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-slate-50 text-xs font-bold text-slate-400 uppercase border-b border-slate-100">
-                                    <th class="px-6 py-4">Fecha</th>
-                                    <th class="px-6 py-4 text-center">Calorías</th>
-                                    <th class="px-6 py-4 text-center">Proteínas</th>
-                                    <th class="px-6 py-4 text-center">Carbohidratos</th>
-                                    <th class="px-6 py-4 text-center">Grasas</th>
-                                    <th class="px-6 py-4">Detalle Consumido</th>
+                                    <th class="px-6 py-4">Date</th>
+                                    <th class="px-6 py-4 text-center">Calories</th>
+                                    <th class="px-6 py-4 text-center">Proteins</th>
+                                    <th class="px-6 py-4 text-center">Carbohydrates</th>
+                                    <th class="px-6 py-4 text-center">Fats</th>
+                                    <th class="px-6 py-4">Details Consumed</th>
                                 </tr>
                             </thead>
                             <tbody id="registry-tbody" class="divide-y divide-slate-50 text-sm text-slate-700">
@@ -503,21 +561,21 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                         </div>
                         <div>
-                            <h2 class="text-base font-extrabold text-slate-800">Conectores de Sincronización</h2>
-                            <p class="text-xs text-slate-400">Vincula tu almacenamiento personal de Google Drive para activar NutriCloud en multiusuario.</p>
+                            <h2 class="text-base font-extrabold text-slate-800">Synchronization Connectors</h2>
+                            <p class="text-xs text-slate-400">Link your personal Google Drive to activate multi-device sync.</p>
                         </div>
                     </div>
 
                     <div class="flex flex-col gap-4">
                         <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                            <h3 class="text-xs font-bold text-slate-700 uppercase mb-2">Instrucciones de activación</h3>
+                            <h3 class="text-xs font-bold text-slate-700 uppercase mb-2">Activation Instructions</h3>
                             <p class="text-xs text-slate-500 leading-relaxed mb-3">
-                                Para sincronizar los datos de forma 100% privada sin bases de datos intermedias, la app utiliza tu propia cuenta. Solo necesitas un <strong>Google Client ID</strong>:
+                                To sync data 100% privately without intermediate databases, the app uses your own account. You only need a <strong>Google Client ID</strong>:
                             </p>
                             <ol class="text-xs text-slate-600 list-decimal pl-4 flex flex-col gap-1.5 mb-4">
-                                <li>Entra en <a href="https://console.cloud.google.com" target="_blank" class="text-emerald-600 font-bold underline hover:text-emerald-700">Google Cloud Console</a> y crea un proyecto rápido.</li>
-                                <li>En "Pantalla de consentimiento OAuth", selecciona tipo de usuario externo y añade el permiso: <code>.../auth/drive.file</code>.</li>
-                                <li>En "Credenciales" crea un <strong>ID de cliente de OAuth</strong> de tipo "Aplicación web" y añade tu origen de carga actual en "Orígenes de JavaScript autorizados".</li>
+                                <li>Go to <a href="https://console.cloud.google.com" target="_blank" class="text-emerald-600 font-bold underline hover:text-emerald-700">Google Cloud Console</a> and create a quick project.</li>
+                                <li>In 'OAuth consent screen', select external user and add the scope: <code>.../auth/drive.file</code>.</li>
+                                <li>In 'Credentials', create an <strong>OAuth Client ID</strong> of type 'Web application' and add your current origin in 'Authorized JavaScript origins'.</li>
                             </ol>
                         </div>
 
@@ -526,7 +584,7 @@
                             <div class="flex flex-col sm:flex-row gap-2.5">
                                 <input type="text" id="google-client-id" placeholder="Ej: XXXXXXXXXXXX-XXXXXXXXXXXXXXXX.apps.googleusercontent.com" class="flex-grow bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
                                 <button onclick="saveClientID()" class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all shrink-0">
-                                    Guardar Client ID
+                                    Save Client ID
                                 </button>
                             </div>
                         </div>
@@ -536,8 +594,8 @@
                 <!-- Backup manual -->
                 <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
                     <div class="border-b border-slate-100 pb-4 mb-4">
-                        <h2 class="text-base font-bold text-slate-800">Copia de Seguridad Manual (JSON)</h2>
-                        <p class="text-xs text-slate-400">Si lo prefieres, puedes descargar o cargar manualmente toda tu información en un formato estándar portable.</p>
+                        <h2 class="text-base font-bold text-slate-800">Manual Backup (JSON)</h2>
+                        <p class="text-xs text-slate-400">You can manually download or upload your data in a standard portable format.</p>
                     </div>
 
                     <div class="flex flex-col gap-4">
@@ -547,10 +605,10 @@
 
                         <div class="flex flex-col sm:flex-row gap-3">
                             <button onclick="exportState()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 px-5 py-3 rounded-xl text-xs font-bold transition-all flex-grow text-center">
-                                Copiar al Portapapeles (Exportar)
+                                Copy to Clipboard (Export)
                             </button>
                             <button onclick="importState()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl text-xs font-bold transition-all flex-grow text-center">
-                                Cargar Datos (Importar)
+                                Load Data (Import)
                             </button>
                         </div>
                     </div>
@@ -563,7 +621,7 @@
     <!-- FOOTER -->
     <footer class="bg-slate-100 border-t border-slate-200 py-5 text-center text-xs text-slate-500 mt-12">
         <div class="max-w-7xl mx-auto px-4">
-            NutriCloud PRO — Multi-Device Cloud Nutrition & Stock Planner • Hecho para el Éxito Cardiovascular.
+            NutriCloud PRO — Multi-Device Cloud Nutrition & Stock Planner • Built for your Health Goals.
         </div>
     </footer>
 
@@ -571,7 +629,7 @@
     <div id="food-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl max-w-md w-full shadow-xl border border-slate-100 flex flex-col overflow-hidden">
             <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-                <h3 id="modal-title" class="font-bold text-slate-800 text-sm">Añadir Alimento</h3>
+                <h3 id="modal-title" class="font-bold text-slate-800 text-sm">Add Food Item</h3>
                 <button onclick="closeFoodModal()" class="text-slate-400 hover:text-slate-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
@@ -581,46 +639,46 @@
                 <input type="hidden" id="modal-food-id">
                 
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Nombre del Alimento</label>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Food Name</label>
                     <input type="text" id="modal-food-name" placeholder="Ej. Lomo de Atún" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Categoría</label>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Category</label>
                     <select id="modal-food-category" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
-                        <option value="Huevos/Lácteos">Huevos/Lácteos</option>
-                        <option value="Pescados">Pescados</option>
-                        <option value="Carbohidratos">Carbohidratos</option>
-                        <option value="Grasas Saludables">Grasas Saludables</option>
-                        <option value="Vegetales">Vegetales</option>
-                        <option value="Frutas">Frutas</option>
+                        <option value="Eggs/Dairy">Eggs/Dairy</option>
+                        <option value="Fish/Seafood">Fish/Seafood</option>
+                        <option value="Carbohydrates">Carbohydrates</option>
+                        <option value="Healthy Fats">Healthy Fats</option>
+                        <option value="Vegetables">Vegetables</option>
+                        <option value="Fruits">Fruits</option>
                     </select>
                 </div>
 
                 <div class="grid grid-cols-3 gap-3">
                     <div class="col-span-2">
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Cantidad Disponible</label>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Cantidad Available</label>
                         <input type="number" id="modal-food-qty" value="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Unidad</label>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Unit</label>
                         <select id="modal-food-unit" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
                             <option value="g">g</option>
                             <option value="ml">ml</option>
-                            <option value="uds">uds</option>
+                            <option value="pcs">pcs</option>
                         </select>
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Mínimo Crítico (Alerta)</label>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Critical Minimum (Alert)</label>
                     <input type="number" id="modal-food-min" value="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
                 </div>
             </div>
 
             <div class="bg-slate-50 px-6 py-4 border-t border-slate-100 flex justify-end gap-3">
-                <button onclick="closeFoodModal()" class="px-4 py-2.5 border border-slate-200 rounded-xl text-slate-600 text-sm font-semibold hover:bg-slate-100 transition-all">Cancelar</button>
-                <button onclick="saveFoodItem()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm">Guardar</button>
+                <button onclick="closeFoodModal()" class="px-4 py-2.5 border border-slate-200 rounded-xl text-slate-600 text-sm font-semibold hover:bg-slate-100 transition-all">Cancel</button>
+                <button onclick="saveFoodItem()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm">Save</button>
             </div>
         </div>
     </div>
@@ -631,55 +689,49 @@
     </div>
 
     <!-- CARGA DE LIBRERÍAS DE GOOGLE OAUTH2 (GIS) -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://accounts.google.com/gsi/client" async defer onload="gisLoaded()"></script>
 
     <!-- CONTROLADOR CENTRAL DE LÓGICA Y SINCRONIZACIÓN -->
     <script>
         // Objeto de Datos Local Basal (Pescatariano & Control Colesterol)
-        let AppState = {
-            profile: {
-                gender: 'Hombre',
-                weight: 100.6,
-                height: 178,
-                age: 35,
-                activity: 'light',
-                leanMass: 68.0,
-                bmr: 1948,
-                tdee: 2679,
-                targetCalories: 2143,
-                targetProtein: 140,
-                targetCarbs: 235,
-                targetFat: 71
-            },
-            inventory: [
-                { id: 1, name: 'Huevos Ecológicos', category: 'Huevos/Lácteos', quantity: 12, unit: 'uds', minQuantity: 6 },
-                { id: 2, name: 'Claras de Huevo Pasteorizadas', category: 'Huevos/Lácteos', quantity: 500, unit: 'ml', minQuantity: 200 },
-                { id: 3, name: 'Salmón Fresco de Noruega', category: 'Pescados', quantity: 600, unit: 'g', minQuantity: 200 },
-                { id: 4, name: 'Lomos de Merluza', category: 'Pescados', quantity: 800, unit: 'g', minQuantity: 300 },
-                { id: 5, name: 'Copo de Avena Integral', category: 'Carbohidratos', quantity: 1000, unit: 'g', minQuantity: 250 },
-                { id: 6, name: 'Espinacas Frescas', category: 'Vegetales', quantity: 300, unit: 'g', minQuantity: 100 },
-                { id: 7, name: 'Aceite de Oliva Virgen Extra', category: 'Grasas Saludables', quantity: 500, unit: 'ml', minQuantity: 100 },
-                { id: 8, name: 'Aguacate', category: 'Grasas Saludables', quantity: 4, unit: 'uds', minQuantity: 2 },
-                { id: 9, name: 'Yogur Griego 0% Natural', category: 'Huevos/Lácteos', quantity: 1000, unit: 'g', minQuantity: 250 },
-                { id: 10, name: 'Manzanas Golden', category: 'Frutas', quantity: 8, unit: 'uds', minQuantity: 3 },
-                { id: 11, name: 'Quinoa Real', category: 'Carbohidratos', quantity: 500, unit: 'g', minQuantity: 150 }
-            ],
-            logs: [
-                { date: '10 Jul 2026', calories: 2110, protein: 138, carbs: 228, fat: 68, items: 'Avena con claras, merluza con quinoa, salmón al horno' },
-                { date: '11 Jul 2026', calories: 2135, protein: 142, carbs: 232, fat: 70, items: 'Tortilla de espinacas, avena con manzana, lomos de merluza' },
-                { date: '12 Jul 2026', calories: 2090, protein: 136, carbs: 225, fat: 69, items: 'Yogur con avena, salmón y ensalada, snack con claras' }
-            ]
-        };
+        let AppState = null;
 
-        // Variables de Estado de Google Drive
+        function createEmptyAppState() {
+            return {
+                profile: {
+                    gender: 'Male',
+                    weight: 70,
+                    height: 170,
+                    age: 30,
+                    leanMass: 50,
+                    activity: 'light',
+                    diet: 'none',
+                    objective: 'maintenance',
+                    bmr: 1550,
+                    tdee: 1860,
+                    targetCalories: 1860,
+                    targetProtein: 140,
+                    targetCarbs: 186,
+                    targetFat: 62
+                },
+                inventory: [],
+                logs: []
+            };
+        }
+
         let googleTokenClient = null;
         let googleAccessToken = null;
         let googleFileId = null;
         let isCloudConnected = false;
         let googleClientId = '';
+        let isGisLoaded = false;
+
+        function gisLoaded() {
+            isGisLoaded = true;
+            checkGoogleClientConfiguration();
+        }
 
         window.addEventListener('DOMContentLoaded', () => {
-            // Carga de configuración inicial guardada localmente
             googleClientId = localStorage.getItem('nutricloud_client_id') || '';
             document.getElementById('google-client-id').value = googleClientId;
 
@@ -689,8 +741,18 @@
                     AppState = JSON.parse(localData);
                 } catch(e) {}
             }
-            updateUI();
-            checkGoogleClientConfiguration();
+
+            if (!AppState) {
+                document.getElementById('startup-modal').classList.remove('hidden');
+                document.getElementById('startup-modal').classList.add('flex');
+            } else {
+                document.getElementById('startup-modal').classList.add('hidden');
+                document.getElementById('startup-modal').classList.remove('flex');
+                updateUI();
+                if (isGisLoaded) {
+                    checkGoogleClientConfiguration();
+                }
+            }
         });
 
         // TOASTS
@@ -739,15 +801,65 @@
             }
             googleClientId = inputVal;
             localStorage.setItem('nutricloud_client_id', googleClientId);
-            showToast("Client ID guardado correctamente.");
+            showToast("Client ID saved correctly.");
             checkGoogleClientConfiguration();
         }
 
-        function initGoogleAuthClient() {
-            if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) {
-                setTimeout(initGoogleAuthClient, 500);
+        function startupConnectDrive() {
+            const inputVal = document.getElementById('startup-client-id').value.trim();
+            if (!inputVal) {
+                showToast("Please enter a Google Client ID.");
                 return;
             }
+            googleClientId = inputVal;
+            localStorage.setItem('nutricloud_client_id', googleClientId);
+            document.getElementById('google-client-id').value = googleClientId;
+            
+            if (!isGisLoaded) {
+                showToast("Loading Google connection... Please try again in 1 second.");
+                return;
+            }
+            
+            initGoogleAuthClient();
+            
+            if (googleTokenClient) {
+                googleTokenClient.requestAccessToken();
+            }
+        }
+
+        function startupImportJSON() {
+            const jsonText = document.getElementById('startup-json-area').value.trim();
+            if (!jsonText) {
+                showToast("Please paste JSON data.");
+                return;
+            }
+            try {
+                const data = JSON.parse(jsonText);
+                if (data && data.profile && data.inventory) {
+                    AppState = data;
+                    saveStateToLocal();
+                    document.getElementById('startup-modal').classList.add('hidden');
+                    document.getElementById('startup-modal').classList.remove('flex');
+                    updateUI();
+                    showToast("Data imported correctly.");
+                } else {
+                    throw new Error("Invalid structure");
+                }
+            } catch (e) {
+                showToast("Invalid JSON format.");
+            }
+        }
+
+        function initGoogleAuthClient() {
+            if (!isGisLoaded || typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) {
+                return;
+            }
+            
+            const btn = document.getElementById('btn-cloud-connect');
+            if (btn && btn.style.display !== 'none' && !isCloudConnected) {
+                btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h12m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg> Connect Google Drive`;
+            }
+
             googleTokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: googleClientId,
                 scope: 'https://www.googleapis.com/auth/drive.file',
@@ -761,8 +873,8 @@
                         localStorage.setItem('nutricloud_gdrive_token_expiry', Date.now() + (expiresIn * 1000));
 
                         isCloudConnected = true;
-                        updateCloudSyncStatus('Conectado', 'bg-emerald-500');
-                        showToast("Autenticado con éxito en Google Drive.");
+                        updateCloudSyncStatus('Connected', 'bg-emerald-500');
+                        showToast("Successfully authenticated with Google Drive.");
                         syncFromCloud();
                     }
                 }
@@ -775,14 +887,14 @@
             if (savedToken && tokenExpiry && Date.now() < parseInt(tokenExpiry)) {
                 googleAccessToken = savedToken;
                 isCloudConnected = true;
-                updateCloudSyncStatus('Conectado', 'bg-emerald-500');
+                updateCloudSyncStatus('Connected', 'bg-emerald-500');
                 syncFromCloud();
             }
         }
 
         function toggleCloudAuth() {
             if (!googleTokenClient) {
-                showToast("Cargando conexión segura con Google... Espera unos segundos e inténtalo de nuevo.");
+                showToast("Loading secure Google connection... Please wait a few seconds and try again.");
                 return;
             }
             googleTokenClient.requestAccessToken();
@@ -797,11 +909,11 @@
             dotEl.className = `w-2.5 h-2.5 rounded-full ${dotBgClass}`;
 
             if (isCloudConnected) {
-                btnEl.innerHTML = `✓ Conectado a la Nube`;
+                btnEl.innerHTML = `✓ Connected a la Nube`;
                 btnEl.classList.remove('bg-white', 'text-emerald-700');
                 btnEl.classList.add('bg-emerald-800', 'text-white');
             } else {
-                btnEl.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h12m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg> Conectar Google Drive`;
+                btnEl.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h12m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg> Connect Google Drive`;
                 btnEl.classList.add('bg-white', 'text-emerald-700');
                 btnEl.classList.remove('bg-emerald-800', 'text-white');
             }
@@ -809,7 +921,7 @@
 
         // LEER Y BUSCAR ARCHIVO EN LA NUBE (Drive API v3)
         async function syncFromCloud() {
-            updateCloudSyncStatus('Cargando...', 'bg-amber-400');
+            updateCloudSyncStatus('Loading...', 'bg-amber-400');
             try {
                 // Buscamos si existe el archivo nutricloud_data.json
                 const searchUrl = `https://www.googleapis.com/drive/v3/files?q=name='nutricloud_data.json'+and+trashed=false&fields=files(id,name)`;
@@ -829,10 +941,11 @@
                 
                 if (searchResult.files && searchResult.files.length > 0) {
                     googleFileId = searchResult.files[0].id;
-                    // Descargamos el contenido del archivo
-                    const downloadUrl = `https://www.googleapis.com/drive/v3/files/${googleFileId}?alt=media`;
+                    const ts = Date.now();
+                    const downloadUrl = `https://www.googleapis.com/drive/v3/files/${googleFileId}?alt=media&t=${ts}`;
                     const fileResponse = await fetch(downloadUrl, {
-                        headers: { 'Authorization': `Bearer ${googleAccessToken}` }
+                        headers: { 'Authorization': `Bearer ${googleAccessToken}` },
+                        cache: 'no-store'
                     });
 
                     if (fileResponse.status === 401) throw new Error("401_UNAUTHORIZED");
@@ -842,15 +955,25 @@
                     if (cloudState && cloudState.profile && cloudState.inventory) {
                         AppState = cloudState;
                         saveStateToLocal();
+                        
+                        document.getElementById('startup-modal').classList.add('hidden');
+                        document.getElementById('startup-modal').classList.remove('flex');
+                        
                         updateUI();
-                        updateCloudSyncStatus('Sincronizado', 'bg-emerald-500');
-                        showToast("Estado descargado e importado desde tu Google Drive.");
+                        updateCloudSyncStatus('Synchronized', 'bg-emerald-500');
+                        showToast("Pantry Updated!");
                     } else {
-                        throw new Error("Datos corruptos en la nube");
+                        throw new Error("Cloud data corrupted");
                     }
                 } else {
-                    // Si el archivo no existe, lo creamos
-                    updateCloudSyncStatus('Creando base...', 'bg-blue-400');
+                    updateCloudSyncStatus('Creating DB...', 'bg-blue-400');
+                    if (!AppState) {
+                        AppState = createEmptyAppState();
+                        saveStateToLocal();
+                        document.getElementById('startup-modal').classList.add('hidden');
+                        document.getElementById('startup-modal').classList.remove('flex');
+                        updateUI();
+                    }
                     await uploadToCloud(true);
                 }
             } catch(e) {
@@ -860,11 +983,11 @@
                     isCloudConnected = false;
                     localStorage.removeItem('nutricloud_gdrive_token');
                     localStorage.removeItem('nutricloud_gdrive_token_expiry');
-                    updateCloudSyncStatus('Sesión expirada', 'bg-slate-300');
-                    showToast("La sesión de Google ha expirado. Por favor, vuelve a conectar.");
+                    updateCloudSyncStatus('Session expired', 'bg-slate-300');
+                    showToast("Google session expired. Please reconnect.");
                 } else {
-                    updateCloudSyncStatus('Error de sincronización', 'bg-red-500');
-                    showToast("Fallo al conectar con la API de Google Drive.");
+                    updateCloudSyncStatus('Sync error', 'bg-red-500');
+                    showToast("Failed to connect to Google Drive API.");
                 }
             }
         }
@@ -873,7 +996,7 @@
         async function uploadToCloud(isNewFile = false) {
             if (!isCloudConnected || !googleAccessToken) return;
             
-            updateCloudSyncStatus('Guardando...', 'bg-amber-400');
+            updateCloudSyncStatus('Saving...', 'bg-amber-400');
 
             try {
                 const metadata = {
@@ -914,10 +1037,10 @@
                 const result = await response.json();
                 if (result && result.id) {
                     googleFileId = result.id;
-                    updateCloudSyncStatus('Sincronizado', 'bg-emerald-500');
+                    updateCloudSyncStatus('Synchronized', 'bg-emerald-500');
                 }
             } catch(e) {
-                updateCloudSyncStatus('Error al subir', 'bg-red-500');
+                updateCloudSyncStatus('Upload Error', 'bg-red-500');
             }
         }
 
@@ -947,12 +1070,14 @@
             document.getElementById('dash-fat-num').innerText = AppState.profile.targetFat;
 
             // Rellenar Inputs en la pestaña Profile
-            document.getElementById('prof-gender').value = AppState.profile.gender;
-            document.getElementById('prof-weight').value = AppState.profile.weight;
-            document.getElementById('prof-height').value = AppState.profile.height;
-            document.getElementById('prof-age').value = AppState.profile.age;
-            document.getElementById('prof-lean').value = AppState.profile.leanMass;
-            document.getElementById('prof-activity').value = AppState.profile.activity;
+            document.getElementById('prof-gender').value = AppState.profile.gender || 'Male';
+            document.getElementById('prof-weight').value = AppState.profile.weight || 70;
+            document.getElementById('prof-height').value = AppState.profile.height || 170;
+            document.getElementById('prof-age').value = AppState.profile.age || 30;
+            document.getElementById('prof-lean').value = AppState.profile.leanMass || 50;
+            document.getElementById('prof-activity').value = AppState.profile.activity || 'light';
+            document.getElementById('prof-diet').value = AppState.profile.diet || 'none';
+            document.getElementById('prof-objective').value = AppState.profile.objective || 'maintenance';
 
             // Recálculos visuales en el perfil
             document.getElementById('calc-bmr').innerText = `${AppState.profile.bmr.toLocaleString()} kcal`;
@@ -977,10 +1102,12 @@
             const age = parseInt(document.getElementById('prof-age').value);
             const lean = parseFloat(document.getElementById('prof-lean').value);
             const activity = document.getElementById('prof-activity').value;
+            const diet = document.getElementById('prof-diet').value;
+            const objective = document.getElementById('prof-objective').value;
 
             // Mifflin-St Jeor BMR
             let bmr = 0;
-            if (gender === 'Hombre') {
+            if (gender === 'Male') {
                 bmr = Math.round(10 * weight + 6.25 * height - 5 * age + 5);
             } else {
                 bmr = Math.round(10 * weight + 6.25 * height - 5 * age - 161);
@@ -993,18 +1120,40 @@
             if (activity === 'active') mult = 1.725;
 
             const tdee = Math.round(bmr * mult);
-            const targetCalories = Math.round(tdee * 0.80); // Deficit basal del 20%
+            
+            let targetCalories = tdee;
+            let protPct = 0.30;
+            let carbPct = 0.40;
+            let fatPct = 0.30;
 
-            // Reparto optimizado pescatariano y para el colesterol:
-            // Proteína: 2.0g por kg de masa magra (para proteger músculo)
-            const targetProtein = Math.round(lean * 2.0); 
-            // Grasa saludable fijada al 30% del volumen energético total (ricas en mono/poliinsaturadas)
-            const targetFat = Math.round((targetCalories * 0.30) / 9);
-            // Carbohidratos: el resto calórico
-            const targetCarbs = Math.round((targetCalories - (targetProtein * 4) - (targetFat * 9)) / 4);
+            if (objective === 'deficit') {
+                targetCalories = Math.round(tdee * 0.80);
+                protPct = 0.35;
+                carbPct = 0.35;
+                fatPct = 0.30;
+            } else if (objective === 'surplus') {
+                targetCalories = Math.round(tdee * 1.10);
+                protPct = 0.25;
+                carbPct = 0.50;
+                fatPct = 0.25;
+            }
+
+            // Diet adjustments
+            if (diet === 'vegan') {
+                carbPct += 0.10;
+                protPct -= 0.05;
+                fatPct -= 0.05;
+            } else if (diet === 'vegetarian') {
+                carbPct += 0.05;
+                protPct -= 0.05;
+            }
+
+            const targetProtein = Math.round((targetCalories * protPct) / 4);
+            const targetCarbs = Math.round((targetCalories * carbPct) / 4);
+            const targetFat = Math.round((targetCalories * fatPct) / 9);
 
             AppState.profile = {
-                gender, weight, height, age, leanMass: lean, activity,
+                gender, weight, height, age, leanMass: lean, activity, diet, objective,
                 bmr, tdee, targetCalories, targetProtein, targetCarbs, targetFat
             };
 
@@ -1038,7 +1187,7 @@
                             <span class="font-bold text-slate-800">${item.name}</span>
                         </div>
                         <div class="flex items-center gap-3">
-                            <span class="text-slate-500 font-medium">Disponible: <strong class="text-red-700">${item.quantity} ${item.unit}</strong></span>
+                            <span class="text-slate-500 font-medium">Available: <strong class="text-red-700">${item.quantity} ${item.unit}</strong></span>
                             <button onclick="quickRefill(${item.id})" class="bg-red-200 hover:bg-red-300 transition-all font-bold text-red-900 px-3 py-1.5 rounded-xl">Abastecer</button>
                         </div>
                     </div>
@@ -1053,7 +1202,7 @@
                 item.quantity += addQty;
                 triggerDataMutation();
                 updateUI();
-                showToast(`+${addQty} ${item.unit} agregados a ${item.name}`);
+                showToast(`+${addQty} ${item.unit} added to ${item.name}`);
             }
         }
 
@@ -1073,8 +1222,8 @@
 
                 const isLow = item.quantity <= item.minQuantity;
                 const statusBadge = isLow 
-                    ? '<span class="px-3 py-1 bg-red-100 text-red-800 font-extrabold text-[10px] rounded-full uppercase tracking-wider">Agotándose</span>'
-                    : '<span class="px-3 py-1 bg-emerald-100 text-emerald-800 font-extrabold text-[10px] rounded-full uppercase tracking-wider">Abundante</span>';
+                    ? '<span class="px-3 py-1 bg-red-100 text-red-800 font-extrabold text-[10px] rounded-full uppercase tracking-wider">Running Out</span>'
+                    : '<span class="px-3 py-1 bg-emerald-100 text-emerald-800 font-extrabold text-[10px] rounded-full uppercase tracking-wider">Plentiful</span>';
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50/70 transition-all">
@@ -1084,8 +1233,8 @@
                         <td class="px-6 py-4 text-center text-slate-400">${item.minQuantity} ${item.unit}</td>
                         <td class="px-6 py-4 text-center">${statusBadge}</td>
                         <td class="px-6 py-4 text-right flex justify-end gap-3">
-                            <button onclick="editFoodItem(${item.id})" class="text-xs text-emerald-600 hover:text-emerald-700 font-bold transition-all">Editar</button>
-                            <button onclick="deleteFoodItem(${item.id})" class="text-xs text-red-500 hover:text-red-700 font-bold transition-all">Eliminar</button>
+                            <button onclick="editFoodItem(${item.id})" class="text-xs text-emerald-600 hover:text-emerald-700 font-bold transition-all">Edit</button>
+                            <button onclick="deleteFoodItem(${item.id})" class="text-xs text-red-500 hover:text-red-700 font-bold transition-all">Delete</button>
                         </td>
                     </tr>
                 `;
@@ -1098,10 +1247,10 @@
 
         // MODAL DE ALIMENTOS
         function openAddFoodModal() {
-            document.getElementById('modal-title').innerText = 'Añadir Alimento';
+            document.getElementById('modal-title').innerText = 'Add Food Item';
             document.getElementById('modal-food-id').value = '';
             document.getElementById('modal-food-name').value = '';
-            document.getElementById('modal-food-category').value = 'Huevos/Lácteos';
+            document.getElementById('modal-food-category').value = 'Eggs/Dairy';
             document.getElementById('modal-food-qty').value = 0;
             document.getElementById('modal-food-unit').value = 'g';
             document.getElementById('modal-food-min').value = 0;
@@ -1113,7 +1262,7 @@
             const item = AppState.inventory.find(i => i.id === id);
             if (!item) return;
 
-            document.getElementById('modal-title').innerText = 'Editar Alimento';
+            document.getElementById('modal-title').innerText = 'Edit Alimento';
             document.getElementById('modal-food-id').value = item.id;
             document.getElementById('modal-food-name').value = item.name;
             document.getElementById('modal-food-category').value = item.category;
@@ -1145,12 +1294,12 @@
                 const index = AppState.inventory.findIndex(i => i.id === parseInt(id));
                 if (index !== -1) {
                     AppState.inventory[index] = { id: parseInt(id), name, category, quantity, unit, minQuantity };
-                    showToast('Alimento actualizado con éxito.');
+                    showToast('Food item successfully updated.');
                 }
             } else {
                 const newId = AppState.inventory.length ? Math.max(...AppState.inventory.map(i => i.id)) + 1 : 1;
                 AppState.inventory.push({ id: newId, name, category, quantity, unit, minQuantity });
-                showToast('Nuevo alimento registrado.');
+                showToast('New food item registered.');
             }
 
             triggerDataMutation();
@@ -1170,8 +1319,8 @@
 
         function generatePlanSuggestion() {
             const eggs = AppState.inventory.find(i => i.name.includes('Huevo') || i.name.includes('Clara'));
-            const fish = AppState.inventory.find(i => i.category === 'Pescados');
-            const carbs = AppState.inventory.find(i => i.category === 'Carbohidratos');
+            const fish = AppState.inventory.find(i => i.category === 'Fish/Seafood');
+            const carbs = AppState.inventory.find(i => i.category === 'Carbohydrates');
 
             if (!eggs || !fish || !carbs) {
                 showToast('Necesitas abastecer huevos, pescado y carbohidratos en tu despensa para crear el plan.');
@@ -1186,20 +1335,20 @@
                 fat: 70,
                 meals: [
                     {
-                        title: "Desayuno: Tortilla de claras con avena integral",
+                        title: "Breakfast: Tortilla de claras con avena integral",
                         desc: "Plato ideal para control lipídico con fibra soluble y proteínas limpias.",
                         macros: "510 Kcal | 36g P | 55g C | 12g G",
                         ingredients: [
                             { id: 2, name: "Claras de Huevo Pasteorizadas", qty: 200, unit: "ml" },
-                            { id: 1, name: "Huevos Ecológicos", qty: 1, unit: "uds" },
+                            { id: 1, name: "Huevos Ecológicos", qty: 1, unit: "pcs" },
                             { id: 5, name: "Copo de Avena Integral", qty: 70, unit: "g" },
-                            { id: 10, name: "Manzanas Golden", qty: 1, unit: "uds" }
+                            { id: 10, name: "Manzanas Golden", qty: 1, unit: "pcs" }
                         ],
                         instructions: "Bate la avena con las claras de huevo y cocina a la plancha. Acompaña con rodajas frescas de manzana."
                     },
                     {
                         title: "Comida: Merluza al vapor con guarnición de quinoa",
-                        desc: "Proteínas magras digestivas sin ácidos grasos saturados.",
+                        desc: "Proteins magras digestivas sin ácidos grasos saturados.",
                         macros: "680 Kcal | 45g P | 80g C | 14g G",
                         ingredients: [
                             { id: 4, name: "Lomos de Merluza", qty: 250, unit: "g" },
@@ -1215,18 +1364,18 @@
                         macros: "310 Kcal | 24g P | 32g C | 5g G",
                         ingredients: [
                             { id: 9, name: "Yogur Griego 0% Natural", qty: 250, unit: "g" },
-                            { id: 10, name: "Manzanas Golden", qty: 1, unit: "uds" },
+                            { id: 10, name: "Manzanas Golden", qty: 1, unit: "pcs" },
                             { id: 5, name: "Copo de Avena Integral", qty: 20, unit: "g" }
                         ],
                         instructions: "Mezcla el yogur con los copos de avena finos y un chorro de agua o edulcorante sin calorías si lo prefieres."
                     },
                     {
-                        title: "Cena: Filete de salmón con aguacate y verduras",
+                        title: "Dinner: Filete de salmón con aguacate y verduras",
                         desc: "Aporte masivo de ácidos grasos saludables monoinsaturados y Omega-3.",
                         macros: "632 Kcal | 36g P | 64g C | 39g G",
                         ingredients: [
                             { id: 3, name: "Salmón Fresco de Noruega", qty: 180, unit: "g" },
-                            { id: 8, name: "Aguacate", qty: 1, unit: "uds" },
+                            { id: 8, name: "Aguacate", qty: 1, unit: "pcs" },
                             { id: 6, name: "Espinacas Frescas", qty: 100, unit: "g" }
                         ],
                         instructions: "Haz el salmón a la plancha por el lado de la piel. Sírvelo junto con láminas de aguacate y las espinacas aliñadas."
@@ -1407,7 +1556,7 @@
                     AppState = imported;
                     triggerDataMutation();
                     updateUI();
-                    showToast('Datos importados correctamente.');
+                    showToast('Data imported correctly.');
                     switchTab('tab-dashboard');
                 } else {
                     showToast('Estructura JSON corrupta o inválida.');
