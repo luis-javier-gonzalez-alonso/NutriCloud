@@ -1,0 +1,60 @@
+# ==============================================================================
+# 1. AI AGENT SECRETS & ENVIRONMENT CONFIGS (Critical Safety)
+# ==============================================================================
+.env
+.env.*
+!.env.example
+*.pem
+*.api_key
+credentials.json
+
+# ==============================================================================
+# 2. AGENT RUNTIMES, LOCAL DATABASES & MEMORY
+# ==============================================================================
+# Local vector database stores & search indexes
+.chroma/
+.faiss/
+.lance/
+*.db
+*.sqlite
+
+# Agent execution history, chat traces, and tool execution logs
+.agent_logs/
+.agent_cache/
+.gitagent/
+.kiro/
+agent_history.json
+traces.lttng
+
+# Model checkpoints and weights (if downloading local LLMs like Llama/Gemma)
+models/
+*.bin
+*.gguf
+*.onnx
+
+# Model Context Protocol (MCP) local settings
+cursor_mcp.json
+mcp_config.json
+
+# ==============================================================================
+# 3. STANDARD SYSTEM & LANGUAGE RUNTIMES (Python/Node examples)
+# ==============================================================================
+# Python virtual environments & bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+
+# Node dependencies & build distributions
+node_modules/
+dist/
+build/
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# Config file with my data
+config/
