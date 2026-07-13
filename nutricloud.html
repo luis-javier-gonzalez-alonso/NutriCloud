@@ -816,6 +816,15 @@
                 const response = await fetch(searchUrl, {
                     headers: { 'Authorization': `Bearer ${googleAccessToken}` }
                 });
+
+                if (response.status === 401) {
+                    throw new Error("401_UNAUTHORIZED");
+                }
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
                 const searchResult = await response.json();
                 
                 if (searchResult.files && searchResult.files.length > 0) {
@@ -825,6 +834,10 @@
                     const fileResponse = await fetch(downloadUrl, {
                         headers: { 'Authorization': `Bearer ${googleAccessToken}` }
                     });
+
+                    if (fileResponse.status === 401) throw new Error("401_UNAUTHORIZED");
+                    if (!fileResponse.ok) throw new Error(`HTTP ${fileResponse.status}`);
+
                     const cloudState = await fileResponse.json();
                     if (cloudState && cloudState.profile && cloudState.inventory) {
                         AppState = cloudState;
@@ -832,6 +845,8 @@
                         updateUI();
                         updateCloudSyncStatus('Sincronizado', 'bg-emerald-500');
                         showToast("Estado descargado e importado desde tu Google Drive.");
+                    } else {
+                        throw new Error("Datos corruptos en la nube");
                     }
                 } else {
                     // Si el archivo no existe, lo creamos
@@ -839,8 +854,18 @@
                     await uploadToCloud(true);
                 }
             } catch(e) {
-                updateCloudSyncStatus('Error de sincronización', 'bg-red-500');
-                showToast("Fallo al conectar con la API de Google Drive.");
+                console.error("syncFromCloud error:", e);
+                
+                if (e.message === "401_UNAUTHORIZED") {
+                    isCloudConnected = false;
+                    localStorage.removeItem('nutricloud_gdrive_token');
+                    localStorage.removeItem('nutricloud_gdrive_token_expiry');
+                    updateCloudSyncStatus('Sesión expirada', 'bg-slate-300');
+                    showToast("La sesión de Google ha expirado. Por favor, vuelve a conectar.");
+                } else {
+                    updateCloudSyncStatus('Error de sincronización', 'bg-red-500');
+                    showToast("Fallo al conectar con la API de Google Drive.");
+                }
             }
         }
 
