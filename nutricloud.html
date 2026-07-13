@@ -63,11 +63,9 @@
                     <div class="text-left bg-slate-50 p-4 rounded-xl border border-slate-100">
                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Select State
                             File</label>
-                        <input type="file" id="startup-file-input" accept=".json"
-                            class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/20 mb-3 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer">
-                        <button onclick="startupLoadFile()"
+                        <button onclick="pickNewFileAndLoad()"
                             class="w-full bg-teal-600 hover:bg-teal-700 text-white px-5 py-3 rounded-xl text-sm font-bold transition-all shadow-sm">
-                            Load Local File
+                            Select Local File
                         </button>
                     </div>
                 </div>
@@ -99,7 +97,7 @@
 
             <!-- Indicador de estado de sincronización en la cabecera -->
             <div class="flex items-center gap-3">
-                <button id="btn-refresh-file" onclick="startupLoadFile()"
+                <button id="btn-refresh-file" onclick="reloadCurrentFile()"
                     class="bg-white text-emerald-700 hover:bg-emerald-50 px-4 py-2 rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-1.5">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -557,11 +555,9 @@
                             <label
                                 class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 mt-4">Change
                                 File</label>
-                            <input type="file" id="settings-file-input" accept=".json"
-                                class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/20 mb-3 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer">
-                            <button onclick="settingsLoadFile()"
+                            <button onclick="pickNewFileAndLoad()"
                                 class="w-full bg-teal-600 hover:bg-teal-700 text-white px-5 py-3 rounded-xl text-sm font-bold transition-all shadow-sm">
-                                Load Local File
+                                Select New Local File
                             </button>
                         </div>
 
@@ -597,6 +593,105 @@
 
     <!-- CONTROLADOR CENTRAL DE LÓGICA Y SINCRONIZACIÓN -->
     <script>
+        // IndexedDB file handle storage for persistent file loading
+        const dbName = 'NutriCloudDB';
+        const storeName = 'fileHandles';
+
+        function getDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(dbName, 1);
+                request.onupgradeneeded = (e) => {
+                    e.target.result.createObjectStore(storeName);
+                };
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function saveFileHandle(handle) {
+            const db = await getDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(storeName, 'readwrite');
+                tx.objectStore(storeName).put(handle, 'stateFile');
+                tx.oncomplete = resolve;
+                tx.onerror = () => reject(tx.error);
+            });
+        }
+
+        async function getFileHandle() {
+            const db = await getDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(storeName, 'readonly');
+                const req = tx.objectStore(storeName).get('stateFile');
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        async function clearFileHandle() {
+            const db = await getDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(storeName, 'readwrite');
+                tx.objectStore(storeName).delete('stateFile');
+                tx.oncomplete = resolve;
+                tx.onerror = () => reject(tx.error);
+            });
+        }
+
+        async function loadFromFileHandle(handle) {
+            if ((await handle.queryPermission({ mode: 'read' })) !== 'granted') {
+                const p = await handle.requestPermission({ mode: 'read' });
+                if (p !== 'granted') throw new Error("Permission to read file was denied");
+            }
+            const file = await handle.getFile();
+            const text = await file.text();
+            const data = JSON.parse(text);
+            if (data && data.profile && data.inventory) {
+                AppState = data;
+                saveStateToLocal();
+                localStorage.setItem('nutricloud_filename', file.name);
+                const displayEl = document.getElementById('settings-current-file');
+                if (displayEl) displayEl.innerText = file.name;
+                updateUI();
+                showToast("File loaded successfully.");
+            } else {
+                throw new Error("Invalid structure");
+            }
+        }
+
+        async function pickNewFileAndLoad() {
+            if (!window.showOpenFilePicker) {
+                showToast("Your browser does not support the File System Access API. Please use Chrome/Edge.");
+                return;
+            }
+            try {
+                const [handle] = await window.showOpenFilePicker({
+                    types: [{ description: 'JSON Files', accept: {'application/json': ['.json']} }],
+                    multiple: false
+                });
+                await saveFileHandle(handle);
+                await loadFromFileHandle(handle);
+                document.getElementById('startup-modal').classList.add('hidden');
+                document.getElementById('startup-modal').classList.remove('flex');
+            } catch (e) {
+                if (e.name !== 'AbortError') {
+                    showToast("Error reading file: " + e.message);
+                }
+            }
+        }
+
+        async function reloadCurrentFile() {
+            try {
+                const handle = await getFileHandle();
+                if (handle) {
+                    await loadFromFileHandle(handle);
+                } else {
+                    showToast("No file configured. Please select one.");
+                }
+            } catch (e) {
+                showToast("Error reloading file: " + e.message);
+            }
+        }
         // Objeto de Datos Local Basal (Pescatariano & Control Colesterol)
         let AppState = null;
 
@@ -650,77 +745,12 @@
             }
         }
 
-        function startupLoadFile() {
-            const fileInput = document.getElementById('startup-file-input');
-            if (fileInput.files.length === 0) {
-                showToast("Please select a JSON file first.");
-                return;
-            }
 
-            const file = fileInput.files[0];
-            const reader = new FileReader();
-
-            reader.onload = function (e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if (data && data.profile && data.inventory) {
-                        AppState = data;
-                        saveStateToLocal();
-                        localStorage.setItem('nutricloud_filename', file.name);
-                        const displayEl = document.getElementById('settings-current-file');
-                        if (displayEl) displayEl.innerText = file.name;
-
-                        document.getElementById('startup-modal').classList.add('hidden');
-                        document.getElementById('startup-modal').classList.remove('flex');
-                        updateUI();
-                        showToast("File loaded successfully.");
-                    } else {
-                        throw new Error("Invalid structure");
-                    }
-                } catch (err) {
-                    showToast("Error parsing file or invalid format.");
-                }
-            };
-
-            reader.readAsText(file);
-        }
-
-        function settingsLoadFile() {
-            const fileInput = document.getElementById('settings-file-input');
-            if (fileInput.files.length === 0) {
-                showToast("Please select a JSON file first.");
-                return;
-            }
-
-            const file = fileInput.files[0];
-            const reader = new FileReader();
-
-            reader.onload = function (e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if (data && data.profile && data.inventory) {
-                        AppState = data;
-                        saveStateToLocal();
-                        localStorage.setItem('nutricloud_filename', file.name);
-                        const displayEl = document.getElementById('settings-current-file');
-                        if (displayEl) displayEl.innerText = file.name;
-
-                        updateUI();
-                        showToast("File loaded successfully.");
-                    } else {
-                        throw new Error("Invalid structure");
-                    }
-                } catch (err) {
-                    showToast("Error parsing file or invalid format.");
-                }
-            };
-
-            reader.readAsText(file);
-        }
 
         function cleanLocalStore() {
             localStorage.removeItem('nutricloud_state');
             localStorage.removeItem('nutricloud_filename');
+            clearFileHandle().catch(console.error);
             AppState = null;
             document.getElementById('settings-current-file').innerText = "No file loaded";
             document.getElementById('startup-modal').classList.remove('hidden');
