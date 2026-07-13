@@ -275,13 +275,13 @@
                                     <path id="progress-circle-bar" class="text-emerald-500 transition-all duration-500" stroke-dasharray="100, 100" stroke-width="3.2" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                                 </svg>
                                 <div class="text-center">
-                                    <span class="block text-2xl font-extrabold text-slate-800">100.6</span>
+                                    <span id="dash-weight-num" class="block text-2xl font-extrabold text-slate-800">100.6</span>
                                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Current Kg</span>
                                 </div>
                             </div>
                         </div>
                         <div class="bg-slate-50 p-3 rounded-xl text-center">
-                            <span class="text-xs font-bold text-slate-500">Estimated Lean Mass: <strong class="text-slate-800 font-extrabold">68 Kg</strong></span>
+                            <span class="text-xs font-bold text-slate-500">Estimated Lean Mass: <strong id="dash-lean-num" class="text-slate-800 font-extrabold">68 Kg</strong></span>
                         </div>
                     </div>
                 </div>
@@ -1059,8 +1059,13 @@
         // REPRODUCCIÓN COMPLETA DE INTERFAZ
         function updateUI() {
             // Cabecera e Inputs de Resumen
-            document.getElementById('header-calories').innerText = `${AppState.profile.targetCalories.toLocaleString()} kcal`;
-            document.getElementById('header-weight').innerText = `${AppState.profile.weight} Kg`;
+            const dashWeight = document.getElementById('dash-weight-num');
+            if (dashWeight) dashWeight.innerText = AppState.profile.weight;
+            
+            const dashLean = document.getElementById('dash-lean-num');
+            if (dashLean) {
+                dashLean.innerText = AppState.profile.leanMass && AppState.profile.leanMass > 0 ? `${AppState.profile.leanMass} Kg` : 'N/A';
+            }
             
             // Stats del Dashboard
             document.getElementById('dash-cal-num').innerText = AppState.profile.targetCalories.toLocaleString();
