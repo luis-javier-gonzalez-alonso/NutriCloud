@@ -411,10 +411,27 @@
                                         <span class="text-slate-500">Total Daily Energy Expenditure (TDEE):</span>
                                         <span id="calc-tdee" class="font-semibold text-slate-800">2,679 kcal</span>
                                     </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-slate-500">Goal Adjustment:</span>
+                                        <span id="calc-goal-adj" class="font-semibold text-amber-600">-536 kcal</span>
+                                    </div>
                                     <div class="border-t border-slate-200 my-2"></div>
                                     <div class="flex justify-between text-base font-bold text-emerald-700">
                                         <span>Daily Target:</span>
                                         <span id="calc-target">2,143 kcal</span>
+                                    </div>
+                                    <div class="border-t border-slate-200 my-2"></div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-slate-500">Protein Target:</span>
+                                        <span id="calc-prot" class="font-semibold text-blue-600">140g</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-slate-500">Carbs Target:</span>
+                                        <span id="calc-carb" class="font-semibold text-amber-600">235g</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-slate-500">Fats Target:</span>
+                                        <span id="calc-fat" class="font-semibold text-teal-600">71g</span>
                                     </div>
                                 </div>
                             </div>
@@ -1165,6 +1182,24 @@
             document.getElementById('calc-bmr').innerText = `${AppState.profile.bmr.toLocaleString()} kcal`;
             document.getElementById('calc-tdee').innerText = `${AppState.profile.tdee.toLocaleString()} kcal`;
             document.getElementById('calc-target').innerText = `${AppState.profile.targetCalories.toLocaleString()} kcal`;
+
+            const goalAdj = AppState.profile.targetCalories - AppState.profile.tdee;
+            const goalAdjText = goalAdj > 0 ? `+${goalAdj.toLocaleString()} kcal` : `${goalAdj.toLocaleString()} kcal`;
+            const adjColor = goalAdj > 0 ? 'text-blue-600' : (goalAdj < 0 ? 'text-amber-600' : 'text-slate-500');
+            const calcGoalAdjEl = document.getElementById('calc-goal-adj');
+            if (calcGoalAdjEl) {
+                calcGoalAdjEl.innerText = goalAdjText;
+                calcGoalAdjEl.className = `font-semibold ${adjColor}`;
+            }
+
+            const calcProtEl = document.getElementById('calc-prot');
+            if (calcProtEl) calcProtEl.innerText = `${AppState.profile.targetProtein}g`;
+            
+            const calcCarbEl = document.getElementById('calc-carb');
+            if (calcCarbEl) calcCarbEl.innerText = `${AppState.profile.targetCarbs}g`;
+            
+            const calcFatEl = document.getElementById('calc-fat');
+            if (calcFatEl) calcFatEl.innerText = `${AppState.profile.targetFat}g`;
 
             // Exportador manual
             document.getElementById('json-io-area').value = JSON.stringify(AppState, null, 2);
