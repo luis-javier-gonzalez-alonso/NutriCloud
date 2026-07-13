@@ -782,7 +782,7 @@
 
         function toggleCloudAuth() {
             if (!googleTokenClient) {
-                showToast("El cliente de autenticación no está listo. Verifica tu Client ID.");
+                showToast("Cargando conexión segura con Google... Espera unos segundos e inténtalo de nuevo.");
                 return;
             }
             googleTokenClient.requestAccessToken();
