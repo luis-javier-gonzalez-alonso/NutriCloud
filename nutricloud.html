@@ -131,11 +131,6 @@
                     Inventory / Pantry
                 </button>
 
-                <button onclick="switchTab('tab-planificador')" id="btn-tab-planificador" class="nav-btn flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all text-slate-600 hover:bg-slate-50 hover:text-emerald-600">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                    Meal Planner
-                </button>
-
                 <button onclick="switchTab('tab-registro')" id="btn-tab-registro" class="nav-btn flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium transition-all text-slate-600 hover:bg-slate-50 hover:text-emerald-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                     Daily Log
@@ -147,18 +142,22 @@
                 </button>
             </div>
 
-            <!-- CARD CLÍNICA CARDIOVASCULAR -->
-            <div class="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100 rounded-2xl p-4.5 shadow-sm">
+            <!-- CARD CLÍNICA DINÁMICA -->
+            <div id="sidebar-clinical-card" class="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100 rounded-2xl p-4.5 shadow-sm">
                 <div class="flex items-center gap-2.5 mb-2 text-emerald-800">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6.267 3.455a.75.75 0 00-.708-.523H4.5a.25.25 0 00-.25.25v1.5c0 .07.029.135.078.183l1.939 1.94a1.5 1.5 0 01-.267.432l-1.94 1.94a.25.25 0 00-.078.182v1.5a.25.25 0 00.25.25h1.059a.75.75 0 00.708-.523l1.09-3.271h2.522l1.09 3.27a.75.75 0 00.708.524H15.5a.25.25 0 00.25-.25v-1.5a.25.25 0 00-.078-.182l-1.939-1.94a1.5 1.5 0 01.267-.432l1.94-1.94a.25.25 0 00.078-.183v-1.5a.25.25 0 00-.25-.25h-1.059a.75.75 0 00-.708.523l-1.09 3.271H8.729l-1.09-3.27a.75.75 0 00-.708-.523z" clip-rule="evenodd"></path></svg>
-                    <span class="text-xs font-bold uppercase tracking-wider">Enfoque Clínico</span>
+                    <span class="text-xs font-bold uppercase tracking-wider">Clinical Focus</span>
                 </div>
-                <p class="text-xs text-slate-600 leading-relaxed mb-3">
-                    Estrategia activa para reducción de colesterol LDL y control de peso. Priorización de fibra soluble (avena, vegetales) y ácidos grasos Omega-3 de pescados de alta calidad.
-                </p>
-                <div class="flex flex-wrap gap-2">
-                    <span class="text-[10px] text-teal-800 font-bold bg-emerald-100/60 px-2.5 py-1 rounded-lg">✓ Pescatariana limpia</span>
-                    <span class="text-[10px] text-emerald-800 font-bold bg-emerald-100/60 px-2.5 py-1 rounded-lg">✓ Bajo en saturadas</span>
+                <h3 id="sidebar-clinical-title" class="font-bold text-emerald-900 text-sm mb-2">Standard Diet</h3>
+                <div class="text-xs mt-3">
+                    <div class="mb-2">
+                        <span class="font-bold text-emerald-700 block mb-1">Pros</span>
+                        <ul id="sidebar-clinical-pros" class="list-disc list-inside text-emerald-600 space-y-1"></ul>
+                    </div>
+                    <div>
+                        <span class="font-bold text-amber-600 block mb-1">Cons / Considerations</span>
+                        <ul id="sidebar-clinical-cons" class="list-disc list-inside text-amber-700 space-y-1"></ul>
+                    </div>
                 </div>
             </div>
         </aside>
@@ -190,9 +189,9 @@
                         <h2 class="text-xl font-extrabold text-slate-800 tracking-tight">Nutritional Dashboard</h2>
                         <p class="text-slate-500 text-xs mt-1">Today is 13 de Julio de 2026. Real-time dietary supervision and connected pantry.</p>
                     </div>
-                    <button onclick="switchTab('tab-planificador')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-sm transition-all flex items-center gap-2">
+                    <button onclick="openLogMealModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-sm transition-all flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                        Run Meal Planner
+                        Add to Daily Log
                     </button>
                 </div>
 
@@ -237,7 +236,7 @@
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
                         <div class="flex justify-between items-center mb-2">
                             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Healthy Fats</span>
-                            <span class="p-1.5 bg-teal-50 text-teal-600 rounded-lg"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg></span>
+                            <span class="p-1.5 bg-teal-50 text-teal-600 rounded-lg"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
                         </div>
                         <div class="flex items-baseline gap-1">
                             <span id="dash-fat-num" class="text-2xl font-extrabold text-slate-800">71</span>
@@ -478,77 +477,7 @@
                 </div>
             </div>
 
-            <!-- TAB: PLANIFICADOR (COMANDO /menu-diario) -->
-            <div id="tab-planificador" class="tab-content hidden flex flex-col gap-6">
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-                    <div class="flex items-center gap-3 mb-2 text-emerald-600">
-                        <div class="p-2.5 bg-emerald-50 rounded-xl">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
-                        </div>
-                        <h2 class="text-lg font-bold text-slate-800">Automatic Meal Planner</h2>
-                    </div>
-                    <p class="text-xs text-slate-500 leading-relaxed">
-                        This module scans your actual stock, designs a complete meal plan that fits your macros perfectly, and deducts the used amounts from your pantry.
-                    </p>
-                    <div class="mt-4">
-                        <button onclick="generatePlanSuggestion()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl text-sm font-semibold shadow-sm transition-all flex items-center gap-2">
-                            <span>⚡ Simulate Daily Plan from Stock</span>
-                        </button>
-                    </div>
-                </div>
 
-                <!-- Plan Sugerido -->
-                <div id="plan-suggestion-box" class="hidden flex flex-col gap-6">
-                    <!-- Resumen del día -->
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
-                            <span class="block text-xs text-slate-400 font-bold uppercase mb-1">Total Calories</span>
-                            <span id="sug-cal" class="text-xl font-extrabold text-slate-800">--</span>
-                            <span class="text-[10px] block text-emerald-600 font-bold" id="sug-cal-diff">/ 2,143 kcal</span>
-                        </div>
-                        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
-                            <span class="block text-xs text-slate-400 font-bold uppercase mb-1">Proteins</span>
-                            <span id="sug-prot" class="text-xl font-extrabold text-slate-800">--</span>
-                            <span class="text-[10px] block text-blue-600 font-bold" id="sug-prot-diff">/ 140g</span>
-                        </div>
-                        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
-                            <span class="block text-xs text-slate-400 font-bold uppercase mb-1">Carbohydrates</span>
-                            <span id="sug-carb" class="text-xl font-extrabold text-slate-800">--</span>
-                            <span class="text-[10px] block text-amber-600 font-bold" id="sug-carb-diff">/ 235g</span>
-                        </div>
-                        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
-                            <span class="block text-xs text-slate-400 font-bold uppercase mb-1">Fats</span>
-                            <span id="sug-fat" class="text-xl font-extrabold text-slate-800">--</span>
-                            <span class="text-[10px] block text-teal-600 font-bold" id="sug-fat-diff">/ 71g</span>
-                        </div>
-                    </div>
-
-                    <!-- Comidas sugeridas -->
-                    <div id="suggested-meals-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Populated dynamically with recipes -->
-                    </div>
-
-                    <!-- Confirmación del menú -->
-                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-150 flex flex-col md:flex-row justify-between items-center gap-4">
-                        <div>
-                            <h3 class="font-bold text-slate-800 text-sm">Did you consume these meals today?</h3>
-                            <p class="text-xs text-slate-400 mt-0.5">This will deduct the amounts from your pantry and log them in your diary.</p>
-                        </div>
-                        <button onclick="confirmSuggestedMenu()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-300">
-                            ✓ Confirm Log and Update Pantry
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Placeholder de plan vacío -->
-                <div id="plan-empty-placeholder" class="bg-white rounded-2xl p-12 shadow-sm border border-slate-100 text-center flex flex-col items-center justify-center">
-                    <div class="p-4.5 bg-emerald-50 rounded-full text-emerald-600 mb-4">
-                        <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                    </div>
-                    <h3 class="text-base font-bold text-slate-800 mb-1">Real-time Meal Calculation</h3>
-                    <p class="text-xs text-slate-400 max-w-md">Click the simulate button to analyze your pantry and build your nutrition plan automatically.</p>
-                </div>
-            </div>
 
             <!-- TAB: REGISTRO HISTORICO -->
             <div id="tab-registro" class="tab-content hidden flex flex-col gap-6">
@@ -652,6 +581,56 @@
             NutriCloud PRO — Multi-Device Cloud Nutrition & Stock Planner • Built for your Health Goals.
         </div>
     </footer>
+
+    <!-- ADD TO DAILY LOG MODAL -->
+    <div id="modal-log-meal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full shadow-xl border border-slate-100 flex flex-col overflow-hidden">
+            <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                <h3 class="font-bold text-slate-800 text-sm">Add to Daily Log</h3>
+                <button onclick="closeLogMealModal()" class="text-slate-400 hover:text-slate-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div class="p-6 flex flex-col gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Meal / Item Name</label>
+                    <input type="text" id="log-meal-name" placeholder="Ex. Grilled Chicken Salad" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Calories (kcal)</label>
+                        <input type="number" id="log-meal-cal" value="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Protein (g)</label>
+                        <input type="number" id="log-meal-prot" value="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Carbs (g)</label>
+                        <input type="number" id="log-meal-carb" value="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Fats (g)</label>
+                        <input type="number" id="log-meal-fat" value="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 px-6 py-4 border-t border-slate-100 flex justify-end gap-3">
+                <button onclick="closeLogMealModal()" class="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-200 transition-colors">
+                    Cancel
+                </button>
+                <button onclick="saveMealLog()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm transition-all">
+                    Log Item
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- ADD/EDIT FOOD MODAL -->
     <div id="food-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -1133,6 +1112,16 @@
                 prosEl.innerHTML = currentDietInfo.pros.map(p => `<li>${p}</li>`).join('');
                 consEl.innerHTML = currentDietInfo.cons.map(c => `<li>${c}</li>`).join('');
             }
+
+            const dashTitleEl = document.getElementById('sidebar-clinical-title');
+            const dashProsEl = document.getElementById('sidebar-clinical-pros');
+            const dashConsEl = document.getElementById('sidebar-clinical-cons');
+
+            if (dashTitleEl && dashProsEl && dashConsEl) {
+                dashTitleEl.innerText = currentDietInfo.title;
+                dashProsEl.innerHTML = currentDietInfo.pros.map(p => `<li>${p}</li>`).join('');
+                dashConsEl.innerHTML = currentDietInfo.cons.map(c => `<li>${c}</li>`).join('');
+            }
         }
 
         // REPRODUCCIÓN COMPLETA DE INTERFAZ
@@ -1421,179 +1410,48 @@
             showToast('Alimento eliminado.');
         }
 
-        // SIMULADOR INTELIGENTE DEL COMANDO /menu-diario
-        let activeSuggestedMenu = null;
-
-        function generatePlanSuggestion() {
-            const eggs = AppState.inventory.find(i => i.name.includes('Huevo') || i.name.includes('Clara'));
-            const fish = AppState.inventory.find(i => i.category === 'Fish/Seafood');
-            const carbs = AppState.inventory.find(i => i.category === 'Carbohydrates');
-
-            if (!eggs || !fish || !carbs) {
-                showToast('Necesitas abastecer huevos, pescado y carbohidratos en tu despensa para crear el plan.');
-                return;
-            }
-
-            // Simulación médica de platos en base a la despensa pescatariana del paciente
-            activeSuggestedMenu = {
-                calories: 2132,
-                protein: 141,
-                carbs: 231,
-                fat: 70,
-                meals: [
-                    {
-                        title: "Breakfast: Tortilla de claras con avena integral",
-                        desc: "Plato ideal para control lipídico con fibra soluble y proteínas limpias.",
-                        macros: "510 Kcal | 36g P | 55g C | 12g G",
-                        ingredients: [
-                            { id: 2, name: "Claras de Huevo Pasteorizadas", qty: 200, unit: "ml" },
-                            { id: 1, name: "Huevos Ecológicos", qty: 1, unit: "pcs" },
-                            { id: 5, name: "Copo de Avena Integral", qty: 70, unit: "g" },
-                            { id: 10, name: "Manzanas Golden", qty: 1, unit: "pcs" }
-                        ],
-                        instructions: "Bate la avena con las claras de huevo y cocina a la plancha. Acompaña con rodajas frescas de manzana."
-                    },
-                    {
-                        title: "Comida: Merluza al vapor con guarnición de quinoa",
-                        desc: "Proteins magras digestivas sin ácidos grasos saturados.",
-                        macros: "680 Kcal | 45g P | 80g C | 14g G",
-                        ingredients: [
-                            { id: 4, name: "Lomos de Merluza", qty: 250, unit: "g" },
-                            { id: 11, name: "Quinoa Real", qty: 100, unit: "g" },
-                            { id: 6, name: "Espinacas Frescas", qty: 100, unit: "g" },
-                            { id: 7, name: "Aceite de Oliva Virgen Extra", qty: 10, unit: "ml" }
-                        ],
-                        instructions: "Cocina la quinoa de base. Prepara el lomo de merluza a la plancha con el aceite de oliva y sírvelo junto con las espinacas frescas."
-                    },
-                    {
-                        title: "Merienda: Yogur natural con copos de avena",
-                        desc: "Snack de bajo índice glucémico óptimo para mantener saciedad estable.",
-                        macros: "310 Kcal | 24g P | 32g C | 5g G",
-                        ingredients: [
-                            { id: 9, name: "Yogur Griego 0% Natural", qty: 250, unit: "g" },
-                            { id: 10, name: "Manzanas Golden", qty: 1, unit: "pcs" },
-                            { id: 5, name: "Copo de Avena Integral", qty: 20, unit: "g" }
-                        ],
-                        instructions: "Mezcla el yogur con los copos de avena finos y un chorro de agua o edulcorante sin calorías si lo prefieres."
-                    },
-                    {
-                        title: "Dinner: Filete de salmón con aguacate y verduras",
-                        desc: "Aporte masivo de ácidos grasos saludables monoinsaturados y Omega-3.",
-                        macros: "632 Kcal | 36g P | 64g C | 39g G",
-                        ingredients: [
-                            { id: 3, name: "Salmón Fresco de Noruega", qty: 180, unit: "g" },
-                            { id: 8, name: "Aguacate", qty: 1, unit: "pcs" },
-                            { id: 6, name: "Espinacas Frescas", qty: 100, unit: "g" }
-                        ],
-                        instructions: "Haz el salmón a la plancha por el lado de la piel. Sírvelo junto con láminas de aguacate y las espinacas aliñadas."
-                    }
-                ]
-            };
-
-            // Volcar valores en el panel del planificador
-            document.getElementById('sug-cal').innerText = `${activeSuggestedMenu.calories} kcal`;
-            document.getElementById('sug-cal-diff').innerText = `/ ${AppState.profile.targetCalories} kcal`;
-            document.getElementById('sug-prot').innerText = `${activeSuggestedMenu.protein}g`;
-            document.getElementById('sug-prot-diff').innerText = `/ ${AppState.profile.targetProtein}g`;
-            document.getElementById('sug-carb').innerText = `${activeSuggestedMenu.carbs}g`;
-            document.getElementById('sug-carb-diff').innerText = `/ ${AppState.profile.targetCarbs}g`;
-            document.getElementById('sug-fat').innerText = `${activeSuggestedMenu.fat}g`;
-            document.getElementById('sug-fat-diff').innerText = `/ ${AppState.profile.targetFat}g`;
-
-            // Construcción del catálogo visual
-            const container = document.getElementById('suggested-meals-container');
-            container.innerHTML = '';
-
-            activeSuggestedMenu.meals.forEach(meal => {
-                let ingredientsList = '';
-                meal.ingredients.forEach(ing => {
-                    ingredientsList += `<li class="flex justify-between py-1 border-b border-slate-50 last:border-0"><span>${ing.name}</span> <span class="font-bold text-slate-700">${ing.qty} ${ing.unit}</span></li>`;
-                });
-
-                container.innerHTML += `
-                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between">
-                        <div>
-                            <div class="flex justify-between items-start gap-2 mb-2">
-                                <h4 class="font-bold text-slate-800 text-sm leading-tight">${meal.title}</h4>
-                                <span class="px-2.5 py-0.5 bg-emerald-50 text-emerald-800 font-extrabold text-[10px] rounded-full shrink-0">${meal.macros}</span>
-                            </div>
-                            <p class="text-xs text-slate-400 mb-4">${meal.desc}</p>
-                            
-                            <div class="bg-slate-50 rounded-xl p-3.5 mb-4">
-                                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Gramos Necesarios</span>
-                                <ul class="text-xs text-slate-600 flex flex-col">
-                                    ${ingredientsList}
-                                </ul>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Elaboración Clínica</span>
-                            <p class="text-xs text-slate-600 italic bg-slate-50 p-3 rounded-xl leading-relaxed">${meal.instructions}</p>
-                        </div>
-                    </div>
-                `;
-            });
-
-            document.getElementById('plan-empty-placeholder').classList.add('hidden');
-            document.getElementById('plan-suggestion-box').classList.remove('hidden');
-            showToast('Menú diario ajustado con tu inventario real generado.');
+        // LOG MEAL MODAL LOGIC
+        function openLogMealModal() {
+            document.getElementById('log-meal-name').value = '';
+            document.getElementById('log-meal-cal').value = 0;
+            document.getElementById('log-meal-prot').value = 0;
+            document.getElementById('log-meal-carb').value = 0;
+            document.getElementById('log-meal-fat').value = 0;
+            document.getElementById('modal-log-meal').classList.remove('hidden');
         }
 
-        function confirmSuggestedMenu() {
-            if (!activeSuggestedMenu) return;
+        function closeLogMealModal() {
+            document.getElementById('modal-log-meal').classList.add('hidden');
+        }
 
-            // Validación de existencia de ingredientes suficientes
-            let canDeduct = true;
-            let missingIngredientsMsg = '';
+        function saveMealLog() {
+            const name = document.getElementById('log-meal-name').value.trim();
+            const cal = parseInt(document.getElementById('log-meal-cal').value) || 0;
+            const prot = parseInt(document.getElementById('log-meal-prot').value) || 0;
+            const carb = parseInt(document.getElementById('log-meal-carb').value) || 0;
+            const fat = parseInt(document.getElementById('log-meal-fat').value) || 0;
 
-            activeSuggestedMenu.meals.forEach(meal => {
-                meal.ingredients.forEach(ing => {
-                    const invItem = AppState.inventory.find(i => i.id === ing.id);
-                    if (!invItem || invItem.quantity < ing.qty) {
-                        canDeduct = false;
-                        missingIngredientsMsg = `Falta ${ing.name} en la despensa.`;
-                    }
-                });
-            });
-
-            if (!canDeduct) {
-                showToast(missingIngredientsMsg + ' Proceso abortado.');
+            if (!name) {
+                showToast('Please enter a meal name.');
                 return;
             }
 
-            // Descuento real en almacén
-            activeSuggestedMenu.meals.forEach(meal => {
-                meal.ingredients.forEach(ing => {
-                    const invItem = AppState.inventory.find(i => i.id === ing.id);
-                    if (invItem) {
-                        invItem.quantity = Math.max(0, invItem.quantity - ing.qty);
-                    }
-                });
-            });
-
-            // Registrar log en histórico
             const today = new Date();
-            const dateStr = today.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+            const dateStr = today.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
             
             AppState.logs.push({
                 date: dateStr,
-                calories: activeSuggestedMenu.calories,
-                protein: activeSuggestedMenu.protein,
-                carbs: activeSuggestedMenu.carbs,
-                fat: activeSuggestedMenu.fat,
-                items: activeSuggestedMenu.meals.map(m => m.title.split(':')[0]).join(', ')
+                calories: cal,
+                protein: prot,
+                carbs: carb,
+                fat: fat,
+                items: name
             });
-
-            // Limpieza y reseteo
-            document.getElementById('plan-suggestion-box').classList.add('hidden');
-            document.getElementById('plan-empty-placeholder').classList.remove('hidden');
-            activeSuggestedMenu = null;
 
             triggerDataMutation();
             updateUI();
-            showToast('✓ Almacén actualizado e histórico sincronizado en Google Drive.');
-            switchTab('tab-dashboard');
+            closeLogMealModal();
+            showToast('Meal successfully logged.');
         }
 
         // TABLA DE HISTORIAL DIARIO
