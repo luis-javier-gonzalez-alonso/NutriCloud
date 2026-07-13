@@ -433,6 +433,11 @@
                                         <span class="text-slate-500">Fats Target:</span>
                                         <span id="calc-fat" class="font-semibold text-teal-600">71g</span>
                                     </div>
+                                    <div class="mt-2 bg-slate-100/70 p-3 rounded-xl border border-slate-200">
+                                        <p class="text-[10px] text-slate-500 leading-relaxed">
+                                            <strong class="text-slate-700">Calculation Note:</strong> Protein is dynamically calculated at <span id="calc-prot-mult" class="font-bold text-blue-600">1.8g</span> per kg of active mass (lean mass preferred) based on your goal. Fats are tailored to your diet and remaining calories are allocated to carbs.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
 
@@ -1201,6 +1206,11 @@
             const calcFatEl = document.getElementById('calc-fat');
             if (calcFatEl) calcFatEl.innerText = `${AppState.profile.targetFat}g`;
 
+            const calcProtMultEl = document.getElementById('calc-prot-mult');
+            if (calcProtMultEl && AppState.profile.proteinMultiplier) {
+                calcProtMultEl.innerText = `${AppState.profile.proteinMultiplier}g`;
+            }
+
             // Exportador manual
             document.getElementById('json-io-area').value = JSON.stringify(AppState, null, 2);
 
@@ -1243,45 +1253,51 @@
             const tdee = Math.round(bmr * mult);
             
             let targetCalories = tdee;
-            let protPct = 0.30;
-            let carbPct = 0.40;
-            let fatPct = 0.30;
+            let proteinMultiplier = 1.8; // Maintenance default
 
             if (objective === 'deficit') {
                 targetCalories = Math.round(tdee * 0.80);
-                protPct = 0.35;
-                carbPct = 0.35;
-                fatPct = 0.30;
+                proteinMultiplier = 2.2; // Preserve muscle in deficit
             } else if (objective === 'surplus') {
                 targetCalories = Math.round(tdee * 1.10);
-                protPct = 0.25;
-                carbPct = 0.50;
-                fatPct = 0.25;
+                proteinMultiplier = 1.6; // Lower need per kg when in surplus
             }
 
-            // Diet adjustments
-            if (diet === 'vegan') {
-                carbPct += 0.10;
-                protPct -= 0.05;
-                fatPct -= 0.05;
-            } else if (diet === 'vegetarian') {
-                carbPct += 0.05;
-                protPct -= 0.05;
-            } else if (diet === 'mediterranean') {
-                fatPct += 0.05;
-                carbPct -= 0.05;
-            } else if (diet === 'keto') {
-                carbPct = 0.05;
-                protPct = 0.20;
-                fatPct = 0.75;
-            } else if (diet === 'paleo') {
-                carbPct -= 0.10;
-                protPct += 0.10;
+            // Diet adjustments for protein
+            if (diet === 'vegan' || diet === 'vegetarian') proteinMultiplier -= 0.1;
+            if (diet === 'paleo') proteinMultiplier += 0.2;
+
+            // Calculate active mass to base macros on
+            const activeMass = lean > 0 ? lean : weight;
+            
+            let targetProtein = Math.round(activeMass * proteinMultiplier);
+            let proteinCalories = targetProtein * 4;
+
+            // Calculate Fats based on a multiplier or diet style
+            let fatMultiplier = 1.0; // 1g per kg default
+            if (diet === 'mediterranean') fatMultiplier = 1.2;
+            if (diet === 'vegan') fatMultiplier = 0.8;
+            
+            let targetFat = Math.round(activeMass * fatMultiplier);
+            let fatCalories = targetFat * 9;
+
+            // Remaining calories go to carbs
+            let remainingCalories = targetCalories - proteinCalories - fatCalories;
+
+            // Keto overrides
+            if (diet === 'keto') {
+                remainingCalories = 50 * 4; // strict 50g carb limit
+                // Fat fills the rest of the target calories
+                fatCalories = targetCalories - proteinCalories - remainingCalories;
+                targetFat = Math.round(fatCalories / 9);
             }
 
-            const targetProtein = Math.round((targetCalories * protPct) / 4);
-            const targetCarbs = Math.round((targetCalories * carbPct) / 4);
-            const targetFat = Math.round((targetCalories * fatPct) / 9);
+            // Fallbacks in case of extreme deficits/surplus where remaining is negative
+            if (remainingCalories < 0) remainingCalories = 0;
+            let targetCarbs = Math.round(remainingCalories / 4);
+            
+            // Save multiplier state for UI
+            AppState.profile.proteinMultiplier = proteinMultiplier.toFixed(1);
 
             AppState.profile = {
                 gender, weight, height, age, leanMass: lean, activity, diet, objective,
