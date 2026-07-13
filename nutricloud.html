@@ -666,7 +666,7 @@
             }
             try {
                 const [handle] = await window.showOpenFilePicker({
-                    types: [{ description: 'JSON Files', accept: {'application/json': ['.json']} }],
+                    types: [{ description: 'JSON Files', accept: { 'application/json': ['.json'] } }],
                     multiple: false
                 });
                 await saveFileHandle(handle);
@@ -745,7 +745,9 @@
             }
         }
 
-
+        function saveStateToLocal() {
+            localStorage.setItem('nutricloud_state', JSON.stringify(AppState));
+        }
 
         function cleanLocalStore() {
             localStorage.removeItem('nutricloud_state');
