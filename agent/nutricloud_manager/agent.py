@@ -1,8 +1,10 @@
 import json
 import os
+import telebot
+from dotenv import load_dotenv
 from google.adk.agents.llm_agent import Agent
-
-# Define the absolute path to the config folder and state file
+from google.adk.runners import InMemoryRunner
+from google.genai import types
 STATE_FILE = os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'nutricloud_state.json')
 
 def get_nutricloud_state() -> str:
@@ -127,7 +129,8 @@ ALWAYS follow these rules:
    - If missing ingredients, warn the user or suggest alternatives.
 3. INGREDIENT SUBSTITUTIONS: If asked for alternative ingredients, provide nutritionally adequate substitutes that strictly adhere to their stated dietary restrictions and goals.
 4. SHOPPING LISTS: Generate shopping lists covering the requested number of days. Calculate the necessary quantities of food needed to hit their exact caloric and nutrient requirements, minus what is currently in the `inventory`.
-5. UPDATING STATE: When the user confirms they have eaten a meal, or confirms they have finished shopping, use update_nutricloud_state() to actively deduct items from the inventory, add items to the inventory, and append the meal to the daily logs. Always maintain the full structure of the JSON (profile, inventory, logs) when updating.
+5. UPDATING STATE: When the user confirms they have eaten a meal, or confirms they have finished shopping, use update_nutricloud_state() to actively deduct items from the inventory, add items to the inventory, and append the meal to the daily logs. 
+   CRITICAL FOR LOGS: The `logs` array must be a flat array of objects. NEVER nest meals inside dates. Every time you log a new meal, you MUST push a new object with the EXACT following keys: `date` (YYYY-MM-DD), `meal` (Breakfast/Lunch/Dinner/Snack), `calories` (integer), `protein` (integer), `carbs` (integer), `fat` (integer), and `items` (a single string with comma-separated items). Always maintain the full structure of the JSON (profile, inventory, logs) when updating.
 6. PROFILE RECALCULATION: When the user wants to update their profile stats or recalculate their macro targets, use recalculate_profile_targets() to automatically apply the proper physiological formulas (Mifflin-St. Jeor, Katch-McArdle) and update the state directly.
 """
 
@@ -138,3 +141,64 @@ root_agent = Agent(
     instruction=NUTRICLOUD_INSTRUCTION,
     tools=[get_nutricloud_state, update_nutricloud_state, recalculate_profile_targets]
 )
+
+if __name__ == '__main__':
+    load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
+    
+    TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "your_telegram_bot_token_here")
+    USER_ID_STR = os.getenv("TELEGRAM_USER_ID", "your_telegram_user_id_here")
+    
+    if TOKEN == "your_telegram_bot_token_here" or not TOKEN:
+        print("Please configure your TELEGRAM_BOT_TOKEN in .env")
+        exit(1)
+        
+    bot = telebot.TeleBot(TOKEN)
+    
+    try:
+        ALLOWED_USER_ID = int(USER_ID_STR)
+    except ValueError:
+        ALLOWED_USER_ID = None
+
+    @bot.message_handler(commands=['start', 'help'])
+    def send_welcome(message):
+        if ALLOWED_USER_ID and message.from_user.id != ALLOWED_USER_ID:
+            print(f"Ignored message from unauthorized user: {message.from_user.id}")
+            return
+            
+        bot.reply_to(message, "Hello! I am your NutriCloud Manager. How can I help you today?")
+        if not ALLOWED_USER_ID:
+            bot.reply_to(message, f"Your Telegram User ID is {message.from_user.id}. Please add this to your .env file as TELEGRAM_USER_ID to restrict access to only you.")
+
+    @bot.message_handler(func=lambda message: True)
+    def handle_message(message):
+        if ALLOWED_USER_ID and message.from_user.id != ALLOWED_USER_ID:
+            print(f"Ignored message from unauthorized user: {message.from_user.id}")
+            return
+            
+        print(f"Received message from {message.from_user.id}: {message.text}")
+        bot.send_chat_action(message.chat.id, 'typing')
+        try:
+            runner = InMemoryRunner(agent=root_agent)
+            runner.auto_create_session = True
+            msg = types.Content(role='user', parts=[types.Part.from_text(text=message.text)])
+            
+            response_text = ""
+            for event in runner.run(
+                user_id=str(message.from_user.id),
+                session_id=str(message.from_user.id),
+                new_message=msg
+            ):
+                if getattr(event, 'content', None) and getattr(event.content, 'parts', None):
+                    for p in event.content.parts:
+                        if getattr(p, 'text', None):
+                            response_text += p.text
+            
+            if not response_text:
+                response_text = "I processed your request, but there is no output."
+                
+            bot.reply_to(message, response_text)
+        except Exception as e:
+            bot.reply_to(message, f"An error ccurred: {str(e)}")
+
+    print("Starting NutriCloud Telegram Bot...")
+    bot.infinity_polling()

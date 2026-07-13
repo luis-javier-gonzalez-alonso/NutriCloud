@@ -985,27 +985,65 @@
             const chartContainer = document.getElementById('dynamic-bar-chart');
             chartContainer.innerHTML = '';
 
-            const logsToRender = AppState.logs.slice(-7); // Mostramos los últimos 7 días
-
-            if (logsToRender.length === 0) {
+            if (!AppState.logs || AppState.logs.length === 0) {
                 chartContainer.innerHTML = `<span class="text-xs text-slate-400 py-12">Registra un menú diario para pintar tus estadísticas.</span>`;
                 return;
             }
 
-            const maxCal = 2500;
+            // Group logs by date
+            const logsByDate = {};
+            AppState.logs.forEach(log => {
+                if (!logsByDate[log.date]) {
+                    logsByDate[log.date] = { 
+                        date: log.date, 
+                        totalCalories: 0, 
+                        totalProtein: 0, 
+                        totalCarbs: 0, 
+                        totalFat: 0, 
+                        meals: [] 
+                    };
+                }
+                logsByDate[log.date].totalCalories += log.calories || 0;
+                logsByDate[log.date].totalProtein += log.protein || 0;
+                logsByDate[log.date].totalCarbs += log.carbs || 0;
+                logsByDate[log.date].totalFat += log.fat || 0;
+                logsByDate[log.date].meals.push(log);
+            });
 
-            logsToRender.forEach(log => {
-                const heightPct = Math.min(100, (log.calories / maxCal) * 100);
+            // Get last 7 days sorted chronologically
+            const sortedDates = Object.keys(logsByDate).sort();
+            const daysToRender = sortedDates.slice(-7).map(date => logsByDate[date]);
+
+            const maxCal = 2500;
+            const mealColors = {
+                'Breakfast': 'bg-orange-400',
+                'Lunch': 'bg-blue-400',
+                'Dinner': 'bg-purple-400',
+                'Snack': 'bg-emerald-400'
+            };
+            const defaultColor = 'bg-slate-400';
+
+            daysToRender.forEach(day => {
+                const totalHeightPct = Math.min(120, (day.totalCalories / maxCal) * 100);
+                
+                let barsHTML = '';
+                day.meals.forEach(meal => {
+                    const mealPct = day.totalCalories > 0 ? (meal.calories / day.totalCalories) * 100 : 0;
+                    const colorClass = mealColors[meal.meal] || defaultColor;
+                    barsHTML += `<div class="w-full ${colorClass} transition-all hover:brightness-110 border-b border-white/20" style="height: ${mealPct}%" title="${meal.meal}: ${meal.calories} kcal"></div>`;
+                });
+
                 chartContainer.innerHTML += `
                     <div class="flex flex-col items-center gap-2 group cursor-pointer relative">
                         <div class="absolute bottom-full mb-1.5 opacity-0 group-hover:opacity-100 transition-all bg-slate-800 text-white text-[10px] py-1.5 px-2.5 rounded-lg shadow-md z-30 pointer-events-none whitespace-nowrap">
-                            P: ${log.protein}g | C: ${log.carbs}g | G: ${log.fat}g
+                            <div class="font-bold border-b border-slate-600 pb-1 mb-1">Total: ${day.totalCalories} kcal</div>
+                            P: ${day.totalProtein}g | C: ${day.totalCarbs}g | G: ${day.totalFat}g
                         </div>
-                        <div class="w-8 sm:w-11 bg-emerald-100 group-hover:bg-emerald-200 transition-all rounded-t-lg flex items-end overflow-hidden" style="height: ${heightPct * 1.2}px">
-                            <div class="w-full bg-emerald-500 transition-all" style="height: 100%"></div>
+                        <div class="w-8 sm:w-11 bg-slate-100 group-hover:bg-slate-200 transition-all rounded-t-lg flex flex-col-reverse justify-start overflow-hidden" style="height: ${totalHeightPct * 1.2}px">
+                            ${barsHTML}
                         </div>
-                        <span class="text-[9px] font-bold text-slate-400">${log.date.split(' ').slice(0, 2).join(' ')}</span>
-                        <span class="text-[10px] font-bold text-slate-700 mt-0.5">${log.calories}</span>
+                        <span class="text-[9px] font-bold text-slate-400">${day.date}</span>
+                        <span class="text-[10px] font-bold text-slate-700 mt-0.5">${day.totalCalories}</span>
                     </div>
                 `;
             });
