@@ -638,6 +638,10 @@
             });
         }
 
+        function saveStateToLocal() {
+            localStorage.setItem('nutricloud_state', JSON.stringify(AppState));
+        }
+
         async function loadFromFileHandle(handle) {
             if ((await handle.queryPermission({ mode: 'read' })) !== 'granted') {
                 const p = await handle.requestPermission({ mode: 'read' });
@@ -743,10 +747,6 @@
             if (activeBtn) {
                 activeBtn.classList.add('bg-emerald-50', 'text-emerald-700', 'font-bold');
             }
-        }
-
-        function saveStateToLocal() {
-            localStorage.setItem('nutricloud_state', JSON.stringify(AppState));
         }
 
         function cleanLocalStore() {
