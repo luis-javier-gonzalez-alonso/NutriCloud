@@ -754,6 +754,12 @@
                 callback: (tokenResponse) => {
                     if (tokenResponse && tokenResponse.access_token) {
                         googleAccessToken = tokenResponse.access_token;
+                        
+                        // Save token to localStorage to persist across refreshes
+                        localStorage.setItem('nutricloud_gdrive_token', googleAccessToken);
+                        const expiresIn = tokenResponse.expires_in || 3599;
+                        localStorage.setItem('nutricloud_gdrive_token_expiry', Date.now() + (expiresIn * 1000));
+
                         isCloudConnected = true;
                         updateCloudSyncStatus('Conectado', 'bg-emerald-500');
                         showToast("Autenticado con éxito en Google Drive.");
@@ -761,6 +767,17 @@
                     }
                 }
             });
+
+            // Recover saved token if it has not expired
+            const savedToken = localStorage.getItem('nutricloud_gdrive_token');
+            const tokenExpiry = localStorage.getItem('nutricloud_gdrive_token_expiry');
+            
+            if (savedToken && tokenExpiry && Date.now() < parseInt(tokenExpiry)) {
+                googleAccessToken = savedToken;
+                isCloudConnected = true;
+                updateCloudSyncStatus('Conectado', 'bg-emerald-500');
+                syncFromCloud();
+            }
         }
 
         function toggleCloudAuth() {
@@ -768,7 +785,7 @@
                 showToast("El cliente de autenticación no está listo. Verifica tu Client ID.");
                 return;
             }
-            googleTokenClient.requestAccessToken({ prompt: 'consent' });
+            googleTokenClient.requestAccessToken();
         }
 
         function updateCloudSyncStatus(statusText, dotBgClass) {
