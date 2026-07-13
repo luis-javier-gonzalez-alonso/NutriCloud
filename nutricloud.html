@@ -207,7 +207,7 @@
                             <span id="dash-cal-num" class="text-2xl font-extrabold text-slate-800">2,143</span>
                             <span class="text-xs text-slate-400 font-semibold">kcal</span>
                         </div>
-                        <p class="text-[10px] text-emerald-600 font-bold mt-2">20% Deficit Applied</p>
+                        <p id="dash-goal-label" class="text-[10px] text-emerald-600 font-bold mt-2">Maintenance Goal</p>
                     </div>
 
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
@@ -1073,10 +1073,17 @@
             document.getElementById('prof-weight').value = AppState.profile.weight || 70;
             document.getElementById('prof-height').value = AppState.profile.height || 170;
             document.getElementById('prof-age').value = AppState.profile.age || 30;
-            document.getElementById('prof-lean').value = AppState.profile.leanMass || 50;
+            document.getElementById('prof-lean').value = AppState.profile.leanMass || '';
             document.getElementById('prof-activity').value = AppState.profile.activity || 'light';
             document.getElementById('prof-diet').value = AppState.profile.diet || 'none';
             document.getElementById('prof-objective').value = AppState.profile.objective || 'maintenance';
+
+            // Actualizar Dashboard Label
+            let objectiveText = "Maintenance Goal";
+            if (AppState.profile.objective === 'deficit') objectiveText = "Weight Loss Deficit";
+            if (AppState.profile.objective === 'surplus') objectiveText = "Muscle Gain Surplus";
+            const dashGoalLabel = document.getElementById('dash-goal-label');
+            if (dashGoalLabel) dashGoalLabel.innerText = objectiveText;
 
             // Recálculos visuales en el perfil
             document.getElementById('calc-bmr').innerText = `${AppState.profile.bmr.toLocaleString()} kcal`;
@@ -1096,17 +1103,21 @@
         // CALCULO MÉDICO DE DEFICIT CALÓRICO Y MACROS
         function saveProfile() {
             const gender = document.getElementById('prof-gender').value;
-            const weight = parseFloat(document.getElementById('prof-weight').value);
-            const height = parseInt(document.getElementById('prof-height').value);
-            const age = parseInt(document.getElementById('prof-age').value);
-            const lean = parseFloat(document.getElementById('prof-lean').value);
+            const weight = parseFloat(document.getElementById('prof-weight').value) || 0;
+            const height = parseInt(document.getElementById('prof-height').value) || 0;
+            const age = parseInt(document.getElementById('prof-age').value) || 0;
+            const leanInput = document.getElementById('prof-lean').value;
+            const lean = leanInput ? parseFloat(leanInput) : 0;
             const activity = document.getElementById('prof-activity').value;
             const diet = document.getElementById('prof-diet').value;
             const objective = document.getElementById('prof-objective').value;
 
-            // Mifflin-St Jeor BMR
             let bmr = 0;
-            if (gender === 'Male') {
+            if (lean > 0) {
+                // Katch-McArdle BMR
+                bmr = Math.round(370 + (21.6 * lean));
+            } else if (gender === 'Male') {
+                // Mifflin-St Jeor BMR
                 bmr = Math.round(10 * weight + 6.25 * height - 5 * age + 5);
             } else {
                 bmr = Math.round(10 * weight + 6.25 * height - 5 * age - 161);
