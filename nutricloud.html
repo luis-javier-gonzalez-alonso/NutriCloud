@@ -486,11 +486,21 @@
                             <thead>
                                 <tr
                                     class="bg-slate-50 text-xs font-bold text-slate-400 uppercase border-b border-slate-100">
-                                    <th class="px-6 py-4 cursor-pointer hover:bg-slate-100 transition-colors" onclick="sortInventory('name')">Ingredient <span id="sort-icon-name"></span></th>
-                                    <th class="px-6 py-4 cursor-pointer hover:bg-slate-100 transition-colors" onclick="sortInventory('category')">Category <span id="sort-icon-category"></span></th>
-                                    <th class="px-6 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors" onclick="sortInventory('quantity')">Available <span id="sort-icon-quantity"></span></th>
-                                    <th class="px-6 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors" onclick="sortInventory('minQuantity')">Min Threshold <span id="sort-icon-minQuantity"></span></th>
-                                    <th class="px-6 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors" onclick="sortInventory('status')">Status <span id="sort-icon-status"></span></th>
+                                    <th class="px-6 py-4 cursor-pointer hover:bg-slate-100 transition-colors"
+                                        onclick="sortInventory('name')">Ingredient <span id="sort-icon-name"></span>
+                                    </th>
+                                    <th class="px-6 py-4 cursor-pointer hover:bg-slate-100 transition-colors"
+                                        onclick="sortInventory('category')">Category <span
+                                            id="sort-icon-category"></span></th>
+                                    <th class="px-6 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors"
+                                        onclick="sortInventory('quantity')">Available <span
+                                            id="sort-icon-quantity"></span></th>
+                                    <th class="px-6 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors"
+                                        onclick="sortInventory('minQuantity')">Min Threshold <span
+                                            id="sort-icon-minQuantity"></span></th>
+                                    <th class="px-6 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors"
+                                        onclick="sortInventory('status')">Status <span id="sort-icon-status"></span>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody id="inventory-tbody" class="divide-y divide-slate-50 text-sm text-slate-700">
@@ -503,10 +513,12 @@
                 <!-- Shopping List -->
                 <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
                     <div class="border-b border-slate-100 pb-4 mb-6 flex justify-between items-center">
-                        <h2 class="text-lg font-extrabold text-slate-800 tracking-tight">Suggested Shopping List</h2>
+                        <h2 class="text-lg font-extrabold text-slate-800 tracking-tight">Shopping List</h2>
                         <span class="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z">
+                                </path>
                             </svg>
                         </span>
                     </div>
@@ -872,26 +884,26 @@
             // Stats del Dashboard
             const elDashCalNum = document.getElementById('dash-cal-num');
             if (elDashCalNum) elDashCalNum.innerText = AppState.profile.targetCalories ? AppState.profile.targetCalories.toLocaleString() : '0';
-            
+
             const elDashProtNum = document.getElementById('dash-prot-num');
             if (elDashProtNum) elDashProtNum.innerText = AppState.profile.targetProtein || '0';
-            
+
             const elDashCarbNum = document.getElementById('dash-carb-num');
             if (elDashCarbNum) elDashCarbNum.innerText = AppState.profile.targetCarbs || '0';
-            
+
             const elDashFatNum = document.getElementById('dash-fat-num');
             if (elDashFatNum) elDashFatNum.innerText = AppState.profile.targetFat || '0';
 
             // Today's consumption vs target
             const elDashCalToday = document.getElementById('dash-cal-today');
             if (elDashCalToday) elDashCalToday.innerText = todayCals.toLocaleString();
-            
+
             const elDashProtToday = document.getElementById('dash-prot-today');
             if (elDashProtToday) elDashProtToday.innerText = todayProt;
-            
+
             const elDashCarbToday = document.getElementById('dash-carb-today');
             if (elDashCarbToday) elDashCarbToday.innerText = todayCarb;
-            
+
             const elDashFatToday = document.getElementById('dash-fat-today');
             if (elDashFatToday) elDashFatToday.innerText = todayFat;
 
@@ -1097,7 +1109,7 @@
 
             [...AppState.logs].reverse().forEach(log => {
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50/70 transition-all">
+                    < tr class="hover:bg-slate-50/70 transition-all" >
                         <td class="px-6 py-4 font-bold text-slate-800">${log.date}</td>
                         <td class="px-6 py-4 font-bold text-slate-800">${log.meal}</td>
                         <td class="px-6 py-4 text-center font-extrabold text-slate-700">${log.calories} kcal</td>
@@ -1105,8 +1117,8 @@
                         <td class="px-6 py-4 text-center text-amber-600 font-bold">${log.carbs}g</td>
                         <td class="px-6 py-4 text-center text-teal-600 font-bold">${log.fat}g</td>
                         <td class="px-6 py-4 text-xs text-slate-500 leading-normal max-w-xs">${log.items || ''}</td>
-                    </tr>
-                `;
+                    </tr >
+                    `;
             });
         }
 
@@ -1116,7 +1128,7 @@
             chartContainer.innerHTML = '';
 
             if (!AppState.logs || AppState.logs.length === 0) {
-                chartContainer.innerHTML = `<span class="text-xs text-slate-400 py-12">Registra un menú diario para pintar tus estadísticas.</span>`;
+                chartContainer.innerHTML = `< span class="text-xs text-slate-400 py-12" > Registra un menú diario para pintar tus estadísticas.</span > `;
                 return;
             }
 
@@ -1160,11 +1172,11 @@
                 day.meals.forEach(meal => {
                     const mealPct = day.totalCalories > 0 ? (meal.calories / day.totalCalories) * 100 : 0;
                     const colorClass = mealColors[meal.meal] || defaultColor;
-                    barsHTML += `<div class="w-full ${colorClass} transition-all hover:brightness-110 border-b border-white/20" style="height: ${mealPct}%" title="${meal.meal}: ${meal.calories} kcal"></div>`;
+                    barsHTML += `< div class="w-full ${colorClass} transition-all hover:brightness-110 border-b border-white/20" style = "height: ${mealPct}%" title = "${meal.meal}: ${meal.calories} kcal" ></div > `;
                 });
 
                 chartContainer.innerHTML += `
-                    <div class="flex flex-col items-center gap-2 group cursor-pointer relative">
+                    < div class="flex flex-col items-center gap-2 group cursor-pointer relative" >
                         <div class="absolute bottom-full mb-1.5 opacity-0 group-hover:opacity-100 transition-all bg-slate-800 text-white text-[10px] py-1.5 px-2.5 rounded-lg shadow-md z-30 pointer-events-none whitespace-nowrap">
                             <div class="font-bold border-b border-slate-600 pb-1 mb-1">Total: ${day.totalCalories} kcal</div>
                             P: ${day.totalProtein}g | C: ${day.totalCarbs}g | G: ${day.totalFat}g
@@ -1174,7 +1186,7 @@
                         </div>
                         <span class="text-[9px] font-bold text-slate-400">${day.date}</span>
                         <span class="text-[10px] font-bold text-slate-700 mt-0.5">${day.totalCalories}</span>
-                    </div>
+                    </div >
                 `;
             });
         }
