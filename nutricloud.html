@@ -1109,7 +1109,7 @@
 
             [...AppState.logs].reverse().forEach(log => {
                 tbody.innerHTML += `
-                    < tr class="hover:bg-slate-50/70 transition-all" >
+                    <tr class="hover:bg-slate-50/70 transition-all">
                         <td class="px-6 py-4 font-bold text-slate-800">${log.date}</td>
                         <td class="px-6 py-4 font-bold text-slate-800">${log.meal}</td>
                         <td class="px-6 py-4 text-center font-extrabold text-slate-700">${log.calories} kcal</td>
@@ -1117,7 +1117,7 @@
                         <td class="px-6 py-4 text-center text-amber-600 font-bold">${log.carbs}g</td>
                         <td class="px-6 py-4 text-center text-teal-600 font-bold">${log.fat}g</td>
                         <td class="px-6 py-4 text-xs text-slate-500 leading-normal max-w-xs">${log.items || ''}</td>
-                    </tr >
+                    </tr>
                     `;
             });
         }
@@ -1128,7 +1128,7 @@
             chartContainer.innerHTML = '';
 
             if (!AppState.logs || AppState.logs.length === 0) {
-                chartContainer.innerHTML = `< span class="text-xs text-slate-400 py-12" > Registra un menú diario para pintar tus estadísticas.</span > `;
+                chartContainer.innerHTML = `<span class="text-xs text-slate-400 py-12">Registra un menú diario para pintar tus estadísticas.</span>`;
                 return;
             }
 
@@ -1172,11 +1172,11 @@
                 day.meals.forEach(meal => {
                     const mealPct = day.totalCalories > 0 ? (meal.calories / day.totalCalories) * 100 : 0;
                     const colorClass = mealColors[meal.meal] || defaultColor;
-                    barsHTML += `< div class="w-full ${colorClass} transition-all hover:brightness-110 border-b border-white/20" style = "height: ${mealPct}%" title = "${meal.meal}: ${meal.calories} kcal" ></div > `;
+                    barsHTML += `<div class="w-full ${colorClass} transition-all hover:brightness-110 border-b border-white/20" style="height: ${mealPct}%" title="${meal.meal}: ${meal.calories} kcal"></div>`;
                 });
 
                 chartContainer.innerHTML += `
-                    < div class="flex flex-col items-center gap-2 group cursor-pointer relative" >
+                    <div class="flex flex-col items-center gap-2 group cursor-pointer relative">
                         <div class="absolute bottom-full mb-1.5 opacity-0 group-hover:opacity-100 transition-all bg-slate-800 text-white text-[10px] py-1.5 px-2.5 rounded-lg shadow-md z-30 pointer-events-none whitespace-nowrap">
                             <div class="font-bold border-b border-slate-600 pb-1 mb-1">Total: ${day.totalCalories} kcal</div>
                             P: ${day.totalProtein}g | C: ${day.totalCarbs}g | G: ${day.totalFat}g
@@ -1186,7 +1186,7 @@
                         </div>
                         <span class="text-[9px] font-bold text-slate-400">${day.date}</span>
                         <span class="text-[10px] font-bold text-slate-700 mt-0.5">${day.totalCalories}</span>
-                    </div >
+                    </div>
                 `;
             });
         }
