@@ -478,11 +478,11 @@
                             <thead>
                                 <tr
                                     class="bg-slate-50 text-xs font-bold text-slate-400 uppercase border-b border-slate-100">
-                                    <th class="px-6 py-4">Ingredient</th>
-                                    <th class="px-6 py-4">Category</th>
-                                    <th class="px-6 py-4 text-center">Available</th>
-                                    <th class="px-6 py-4 text-center">Min Threshold</th>
-                                    <th class="px-6 py-4 text-center">Status</th>
+                                    <th class="px-6 py-4 cursor-pointer hover:bg-slate-100 transition-colors" onclick="sortInventory('name')">Ingredient <span id="sort-icon-name"></span></th>
+                                    <th class="px-6 py-4 cursor-pointer hover:bg-slate-100 transition-colors" onclick="sortInventory('category')">Category <span id="sort-icon-category"></span></th>
+                                    <th class="px-6 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors" onclick="sortInventory('quantity')">Available <span id="sort-icon-quantity"></span></th>
+                                    <th class="px-6 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors" onclick="sortInventory('minQuantity')">Min Threshold <span id="sort-icon-minQuantity"></span></th>
+                                    <th class="px-6 py-4 text-center cursor-pointer hover:bg-slate-100 transition-colors" onclick="sortInventory('status')">Status <span id="sort-icon-status"></span></th>
                                 </tr>
                             </thead>
                             <tbody id="inventory-tbody" class="divide-y divide-slate-50 text-sm text-slate-700">
@@ -925,20 +925,61 @@
             });
         }
 
+        // SORTING STATE
+        let currentSortColumn = 'name';
+        let currentSortAsc = true;
+
+        function sortInventory(column) {
+            if (currentSortColumn === column) {
+                currentSortAsc = !currentSortAsc;
+            } else {
+                currentSortColumn = column;
+                currentSortAsc = true;
+            }
+            renderInventoryTable();
+        }
+
         // LISTA DE INVENTARIO
         function renderInventoryTable() {
             const tbody = document.getElementById('inventory-tbody');
             tbody.innerHTML = '';
 
+            // Update sort icons
+            ['name', 'category', 'quantity', 'minQuantity', 'status'].forEach(col => {
+                const icon = document.getElementById(`sort-icon-${col}`);
+                if (icon) {
+                    icon.innerText = currentSortColumn === col ? (currentSortAsc ? '↑' : '↓') : '';
+                }
+            });
+
             const searchQuery = document.getElementById('food-search').value.toLowerCase();
             const catFilter = document.getElementById('category-filter').value;
 
-            AppState.inventory.forEach(item => {
+            let filteredItems = AppState.inventory.filter(item => {
                 const matchesSearch = item.name.toLowerCase().includes(searchQuery);
                 const matchesCategory = catFilter === 'all' || item.category === catFilter;
+                return matchesSearch && matchesCategory;
+            });
 
-                if (!matchesSearch || !matchesCategory) return;
+            filteredItems.sort((a, b) => {
+                let valA, valB;
+                if (currentSortColumn === 'status') {
+                    valA = a.quantity <= a.minQuantity ? 0 : 1;
+                    valB = b.quantity <= b.minQuantity ? 0 : 1;
+                } else {
+                    valA = a[currentSortColumn];
+                    valB = b[currentSortColumn];
+                }
 
+                if (typeof valA === 'string') valA = valA.toLowerCase();
+                if (typeof valB === 'string') valB = valB.toLowerCase();
+
+                if (valA < valB) return currentSortAsc ? -1 : 1;
+                if (valA > valB) return currentSortAsc ? 1 : -1;
+                return 0;
+            });
+
+            filteredItems.forEach(item => {
                 const isLow = item.quantity <= item.minQuantity;
                 const statusBadge = isLow
                     ? '<span class="px-3 py-1 bg-red-100 text-red-800 font-extrabold text-[10px] rounded-full uppercase tracking-wider">Running Out</span>'
