@@ -132,6 +132,11 @@ ALWAYS follow these rules:
 5. UPDATING STATE: When the user confirms they have eaten a meal, or confirms they have finished shopping, use update_nutricloud_state() to actively deduct items from the inventory, add items to the inventory, and append the meal to the daily logs. 
    CRITICAL FOR LOGS: The `logs` array must be a flat array of objects. NEVER nest meals inside dates. Every time you log a new meal, you MUST push a new object with the EXACT following keys: `date` (YYYY-MM-DD), `meal` (Breakfast/Lunch/Dinner/Snack), `calories` (integer), `protein` (integer), `carbs` (integer), `fat` (integer), and `items` (a single string with comma-separated items). Always maintain the full structure of the JSON (profile, inventory, logs) when updating.
 6. PROFILE RECALCULATION: When the user wants to update their profile stats or recalculate their macro targets, use recalculate_profile_targets() to automatically apply the proper physiological formulas (Mifflin-St. Jeor, Katch-McArdle) and update the state directly.
+7. IMAGE PROCESSING & CONFIRMATION:
+   - If the user sends an image, determine if it is a grocery haul/receipt OR a cooked meal.
+   - For GROCERIES/RECEIPTS: Extract all items, aggregate them by type, and check if they exist in the `inventory` (even if a different brand). DO NOT UPDATE STATE YET. Instead, reply with a single summarized list of the detected items and explicitly ask the user for confirmation (e.g. "Please confirm these additions to your pantry...").
+   - For COOKED MEALS: Estimate the quantities, ingredients, and macros (calories, protein, carbs, fat). DO NOT UPDATE STATE YET. Reply with a single summarized list of the estimated ingredients/macros and explicitly ask for confirmation to add to the log and subtract from the pantry.
+   - ONLY when the user explicitly confirms (e.g., replies "yes" or modifies the list), use `update_nutricloud_state` to perform the corresponding action.
 """
 
 root_agent = Agent(
@@ -169,18 +174,35 @@ if __name__ == '__main__':
         if not ALLOWED_USER_ID:
             bot.reply_to(message, f"Your Telegram User ID is {message.from_user.id}. Please add this to your .env file as TELEGRAM_USER_ID to restrict access to only you.")
 
-    @bot.message_handler(func=lambda message: True)
+    # Instantiate the runner globally so session memory is preserved across messages
+    runner = InMemoryRunner(agent=root_agent)
+    runner.auto_create_session = True
+
+    @bot.message_handler(content_types=['text', 'photo'])
     def handle_message(message):
         if ALLOWED_USER_ID and message.from_user.id != ALLOWED_USER_ID:
             print(f"Ignored message from unauthorized user: {message.from_user.id}")
             return
             
-        print(f"Received message from {message.from_user.id}: {message.text}")
+        print(f"Received message from {message.from_user.id}")
         bot.send_chat_action(message.chat.id, 'typing')
         try:
-            runner = InMemoryRunner(agent=root_agent)
-            runner.auto_create_session = True
-            msg = types.Content(role='user', parts=[types.Part.from_text(text=message.text)])
+            parts = []
+            if message.photo:
+                file_info = bot.get_file(message.photo[-1].file_id)
+                downloaded_file = bot.download_file(file_info.file_path)
+                parts.append(types.Part.from_bytes(data=downloaded_file, mime_type='image/jpeg'))
+                
+            text_content = message.text or message.caption
+            if text_content:
+                parts.append(types.Part.from_text(text=text_content))
+            elif message.photo:
+                parts.append(types.Part.from_text(text="Analyze this image based on my instructions."))
+                
+            if not parts:
+                return
+
+            msg = types.Content(role='user', parts=parts)
             
             response_text = ""
             for event in runner.run(
