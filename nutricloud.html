@@ -499,6 +499,21 @@
                         </table>
                     </div>
                 </div>
+
+                <!-- Shopping List -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                    <div class="border-b border-slate-100 pb-4 mb-6 flex justify-between items-center">
+                        <h2 class="text-lg font-extrabold text-slate-800 tracking-tight">Suggested Shopping List</h2>
+                        <span class="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                        </span>
+                    </div>
+                    <div id="shopping-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
             </div>
 
             <!-- TAB: log HISTORICO -->
@@ -932,6 +947,7 @@
             // Tablas e Históricos
             renderAlerts();
             renderInventoryTable();
+            renderShoppingList();
             renderRegistryTable();
             renderChart();
         }
@@ -1036,6 +1052,37 @@
                         <td class="px-6 py-4 text-center">${statusBadge}</td>
                     </tr>
                 `;
+            });
+        }
+
+        // SHOPPING LIST
+        function renderShoppingList() {
+            const container = document.getElementById('shopping-list-container');
+            container.innerHTML = '';
+
+            if (!AppState.shoppingList || AppState.shoppingList.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full p-6 bg-slate-50 border border-slate-100 rounded-2xl text-center text-sm text-slate-500 font-medium">
+                        Your shopping list is empty!
+                    </div>
+                `;
+                return;
+            }
+
+            AppState.shoppingList.forEach(item => {
+                // If it's just a string, wrap it. If object, use properties.
+                let name = typeof item === 'string' ? item : item.name;
+                let details = typeof item === 'string' ? '' : \`\${item.quantity || ''} \${item.unit || ''}\`;
+                
+                container.innerHTML += \`
+                    <div class="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex items-center gap-3">
+                            <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                            <span class="font-bold text-slate-700">\${name}</span>
+                        </div>
+                        \${details ? \`<span class="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-md">\${details}</span>\` : ''}
+                    </div>
+                \`;
             });
         }
 
