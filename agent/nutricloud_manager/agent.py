@@ -1,5 +1,6 @@
 import json
 import os
+import datetime
 import telebot
 from dotenv import load_dotenv
 from google.adk.agents.llm_agent import Agent
@@ -112,6 +113,10 @@ def recalculate_profile_targets() -> str:
     except Exception as e:
         return f"Error recalculating profile: {str(e)}"
 
+def get_current_date() -> str:
+    """Returns the current date in YYYY-MM-DD format."""
+    return datetime.date.today().strftime("%Y-%m-%d")
+
 # Comprehensive Agent Instruction
 NUTRICLOUD_INSTRUCTION = """You are the NutriCloud Manager, an advanced dietary assistant.
 You have direct access to the user's NutriCloud state which includes:
@@ -122,7 +127,7 @@ You have direct access to the user's NutriCloud state which includes:
 ALWAYS follow these rules:
 1. STATE AWARENESS: Always use get_nutricloud_state() when the user asks for a meal plan, a shopping list, or updates.
 2. MEAL SUGGESTIONS: 
-   - Check the `logs` for the current day. 
+   - Check the `logs` for the current day (use get_current_date() to find out what day today is). 
    - If it's breakfast, plan freely based on inventory and daily targets.
    - If it's lunch or dinner, strictly analyze what has already been eaten today to AVOID repetition (e.g., do not suggest eggs if they already ate eggs for breakfast).
    - Ensure suggestions help the user hit their exact remaining macros for the day, respecting their dietary restrictions.
@@ -130,7 +135,7 @@ ALWAYS follow these rules:
 3. INGREDIENT SUBSTITUTIONS: If asked for alternative ingredients, provide nutritionally adequate substitutes that strictly adhere to their stated dietary restrictions and goals.
 4. SHOPPING LISTS: Generate shopping lists covering the requested number of days. Calculate the necessary quantities of food needed to hit their exact caloric and nutrient requirements, minus what is currently in the `inventory`.
 5. UPDATING STATE: When the user confirms they have eaten a meal, or confirms they have finished shopping, use update_nutricloud_state() to actively deduct items from the inventory, add items to the inventory, and append the meal to the daily logs. 
-   CRITICAL FOR LOGS: The `logs` array must be a flat array of objects. NEVER nest meals inside dates. Every time you log a new meal, you MUST push a new object with the EXACT following keys: `date` (YYYY-MM-DD), `meal` (Breakfast/Lunch/Dinner/Snack), `calories` (integer), `protein` (integer), `carbs` (integer), `fat` (integer), and `items` (a single string with comma-separated items). Always maintain the full structure of the JSON (profile, inventory, logs) when updating.
+   CRITICAL FOR LOGS: Use get_current_date() to determine the current date. The `logs` array must be a flat array of objects. NEVER nest meals inside dates. Every time you log a new meal, you MUST push a new object with the EXACT following keys: `date` (YYYY-MM-DD), `meal` (Breakfast/Lunch/Dinner/Snack), `calories` (integer), `protein` (integer), `carbs` (integer), `fat` (integer), and `items` (a single string with comma-separated items). Always maintain the full structure of the JSON (profile, inventory, logs) when updating.
 6. PROFILE RECALCULATION: When the user wants to update their profile stats or recalculate their macro targets, use recalculate_profile_targets() to automatically apply the proper physiological formulas (Mifflin-St. Jeor, Katch-McArdle) and update the state directly.
 7. IMAGE PROCESSING & CONFIRMATION:
    - If the user sends an image, determine if it is a grocery haul/receipt OR a cooked meal.
@@ -144,7 +149,7 @@ root_agent = Agent(
     name='nutricloud_manager',
     description='A specialized dietary assistant that manages the NutriCloud state, suggests meals, generates shopping lists, and updates inventory.',
     instruction=NUTRICLOUD_INSTRUCTION,
-    tools=[get_nutricloud_state, update_nutricloud_state, recalculate_profile_targets]
+    tools=[get_nutricloud_state, update_nutricloud_state, recalculate_profile_targets, get_current_date]
 )
 
 if __name__ == '__main__':

@@ -191,8 +191,10 @@
                                 </svg></span>
                         </div>
                         <div class="flex items-baseline gap-1">
-                            <span id="dash-cal-num" class="text-2xl font-extrabold text-slate-800">2,143</span>
-                            <span class="text-xs text-slate-400 font-semibold">kcal</span>
+                            <span id="dash-cal-today" class="text-2xl font-extrabold text-emerald-600">0</span>
+                            <span class="text-lg font-bold text-slate-800 mx-1">/</span>
+                            <span id="dash-cal-num" class="text-xl font-bold text-slate-700">2,143</span>
+                            <span class="text-xs text-slate-400 font-semibold ml-1">kcal</span>
                         </div>
                     </div>
 
@@ -207,8 +209,10 @@
                                 </svg></span>
                         </div>
                         <div class="flex items-baseline gap-1">
-                            <span id="dash-prot-num" class="text-2xl font-extrabold text-slate-800">140</span>
-                            <span class="text-xs text-slate-400 font-semibold">g</span>
+                            <span id="dash-prot-today" class="text-2xl font-extrabold text-blue-600">0</span>
+                            <span class="text-lg font-bold text-slate-800 mx-1">/</span>
+                            <span id="dash-prot-num" class="text-xl font-bold text-slate-700">140</span>
+                            <span class="text-xs text-slate-400 font-semibold ml-1">g</span>
                         </div>
                     </div>
 
@@ -223,8 +227,10 @@
                                 </svg></span>
                         </div>
                         <div class="flex items-baseline gap-1">
-                            <span id="dash-carb-num" class="text-2xl font-extrabold text-slate-800">235</span>
-                            <span class="text-xs text-slate-400 font-semibold">g</span>
+                            <span id="dash-carb-today" class="text-2xl font-extrabold text-amber-600">0</span>
+                            <span class="text-lg font-bold text-slate-800 mx-1">/</span>
+                            <span id="dash-carb-num" class="text-xl font-bold text-slate-700">235</span>
+                            <span class="text-xs text-slate-400 font-semibold ml-1">g</span>
                         </div>
                     </div>
 
@@ -239,8 +245,10 @@
                                 </svg>
                         </div>
                         <div class="flex items-baseline gap-1">
-                            <span id="dash-fat-num" class="text-2xl font-extrabold text-slate-800">71</span>
-                            <span class="text-xs text-slate-400 font-semibold">g</span>
+                            <span id="dash-fat-today" class="text-2xl font-extrabold text-teal-600">0</span>
+                            <span class="text-lg font-bold text-slate-800 mx-1">/</span>
+                            <span id="dash-fat-num" class="text-xl font-bold text-slate-700">71</span>
+                            <span class="text-xs text-slate-400 font-semibold ml-1">g</span>
                         </div>
                     </div>
                 </div>
@@ -832,11 +840,45 @@
                 dashLean.innerText = AppState.profile.leanMass && AppState.profile.leanMass > 0 ? `${AppState.profile.leanMass} Kg` : 'N/A';
             }
 
+            // Calculate today's consumed macros
+            const todayStr = new Date().toISOString().split('T')[0];
+            let todayCals = 0, todayProt = 0, todayCarb = 0, todayFat = 0;
+            if (AppState.logs) {
+                AppState.logs.forEach(log => {
+                    if (log.date === todayStr) {
+                        todayCals += log.calories || 0;
+                        todayProt += log.protein || 0;
+                        todayCarb += log.carbs || 0;
+                        todayFat += log.fat || 0;
+                    }
+                });
+            }
+
             // Stats del Dashboard
-            document.getElementById('dash-cal-num').innerText = AppState.profile.targetCalories.toLocaleString();
-            document.getElementById('dash-prot-num').innerText = AppState.profile.targetProtein;
-            document.getElementById('dash-carb-num').innerText = AppState.profile.targetCarbs;
-            document.getElementById('dash-fat-num').innerText = AppState.profile.targetFat;
+            const elDashCalNum = document.getElementById('dash-cal-num');
+            if (elDashCalNum) elDashCalNum.innerText = AppState.profile.targetCalories ? AppState.profile.targetCalories.toLocaleString() : '0';
+            
+            const elDashProtNum = document.getElementById('dash-prot-num');
+            if (elDashProtNum) elDashProtNum.innerText = AppState.profile.targetProtein || '0';
+            
+            const elDashCarbNum = document.getElementById('dash-carb-num');
+            if (elDashCarbNum) elDashCarbNum.innerText = AppState.profile.targetCarbs || '0';
+            
+            const elDashFatNum = document.getElementById('dash-fat-num');
+            if (elDashFatNum) elDashFatNum.innerText = AppState.profile.targetFat || '0';
+
+            // Today's consumption vs target
+            const elDashCalToday = document.getElementById('dash-cal-today');
+            if (elDashCalToday) elDashCalToday.innerText = todayCals.toLocaleString();
+            
+            const elDashProtToday = document.getElementById('dash-prot-today');
+            if (elDashProtToday) elDashProtToday.innerText = todayProt;
+            
+            const elDashCarbToday = document.getElementById('dash-carb-today');
+            if (elDashCarbToday) elDashCarbToday.innerText = todayCarb;
+            
+            const elDashFatToday = document.getElementById('dash-fat-today');
+            if (elDashFatToday) elDashFatToday.innerText = todayFat;
 
             // Rellenar Inputs en la pestaña Profile
             document.getElementById('prof-gender').value = AppState.profile.gender || 'male';
