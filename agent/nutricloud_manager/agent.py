@@ -231,4 +231,10 @@ if __name__ == '__main__':
             bot.reply_to(message, f"An error ccurred: {str(e)}")
 
     print("Starting NutriCloud Telegram Bot...")
-    bot.infinity_polling()
+    import time
+    while True:
+        try:
+            bot.infinity_polling(timeout=10, long_polling_timeout=5)
+        except Exception as e:
+            print(f"Polling error: {e}")
+            time.sleep(5)
