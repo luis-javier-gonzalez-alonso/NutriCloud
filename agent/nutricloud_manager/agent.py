@@ -145,6 +145,7 @@ ALWAYS follow these rules:
    - For GROCERIES/RECEIPTS: Extract all items, aggregate them by type, and check if they exist in the `inventory` (even if a different brand). DO NOT UPDATE STATE YET. Instead, reply with a single summarized list of the detected items and explicitly ask the user for confirmation (e.g. "Please confirm these additions to your pantry...").
    - For COOKED MEALS: Estimate the quantities, ingredients, and macros (calories, protein, carbs, fat). DO NOT UPDATE STATE YET. Reply with a single summarized list of the estimated ingredients/macros and explicitly ask for confirmation to add to the log and subtract from the pantry.
    - ONLY when the user explicitly confirms (e.g., replies "yes" or modifies the list), use `update_nutricloud_state` to perform the corresponding action.
+8. FORMATTING: Use Telegram's HTML syntax for all formatting (<b>bold</b>, <i>italic</i>, <u>underline</u>, <s>strikethrough</s>, <code>inline code</code>, <pre>code block</pre>, <a href="URL">inline URL</a>). NEVER use Markdown asterisks or hashes. ONLY use HTML tags.
 """
 
 root_agent = Agent(
@@ -226,7 +227,7 @@ if __name__ == '__main__':
             if not response_text:
                 response_text = "I processed your request, but there is no output."
                 
-            bot.reply_to(message, response_text)
+            bot.reply_to(message, response_text, parse_mode='HTML')
         except Exception as e:
             bot.reply_to(message, f"An error ccurred: {str(e)}")
 
