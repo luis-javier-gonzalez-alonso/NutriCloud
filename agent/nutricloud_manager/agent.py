@@ -233,9 +233,11 @@ if __name__ == '__main__':
 
     print("Starting NutriCloud Telegram Bot...")
     import time
+    import logging
     while True:
         try:
-            bot.infinity_polling(timeout=10, long_polling_timeout=5)
+            # logger_level=logging.CRITICAL prevents the huge tracebacks from printing when a timeout happens
+            bot.infinity_polling(logger_level=logging.CRITICAL)
         except Exception as e:
             print(f"Polling error: {e}")
             time.sleep(5)
