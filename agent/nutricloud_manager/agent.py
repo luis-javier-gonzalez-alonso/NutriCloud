@@ -146,6 +146,7 @@ ALWAYS follow these rules:
    - For COOKED MEALS: Estimate the quantities, ingredients, and macros (calories, protein, carbs, fat). DO NOT UPDATE STATE YET. Reply with a single summarized list of the estimated ingredients/macros and explicitly ask for confirmation to add to the log and subtract from the pantry.
    - ONLY when the user explicitly confirms (e.g., replies "yes" or modifies the list), use `update_nutricloud_state` to perform the corresponding action.
 8. FORMATTING: Use Telegram's HTML syntax for all formatting (<b>bold</b>, <i>italic</i>, <u>underline</u>, <s>strikethrough</s>, <code>inline code</code>, <pre>code block</pre>, <a href="URL">inline URL</a>). NEVER use Markdown asterisks or hashes. NEVER use unsupported HTML tags like <ul>, <ol>, <li>, <p>, <br>, or headers like <h1>. For lists, just use plain text with a dash and a newline (e.g., "- Item 1\n- Item 2").
+9. CONCISENESS & TONE: Be direct and concise. Do NOT ask conversational follow-up questions to keep the conversation going. Never end your messages with questions like "Do you need anything else?", "Shall we proceed?", or "Is there anything else I can adjust?". Just confirm the action and stop.
 """
 
 root_agent = Agent(
