@@ -6,7 +6,9 @@ from dotenv import load_dotenv
 from google.adk.agents.llm_agent import Agent
 from google.adk.runners import InMemoryRunner
 from google.genai import types
+import shutil
 STATE_FILE = os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'nutricloud_state.json')
+HOME_STATE_FILE = os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'nutricloud_state_home.json')
 
 def get_nutricloud_state() -> str:
     """Reads the current state of NutriCloud including profile (goals, macros, diet), inventory, and historical daily logs. Returns JSON string."""
@@ -113,6 +115,51 @@ def recalculate_profile_targets() -> str:
     except Exception as e:
         return f"Error recalculating profile: {str(e)}"
 
+def stash_pantry_for_travel() -> str:
+    """Saves the current state as the 'home' state and clears the current pantry inventory for travelling."""
+    try:
+        if not os.path.exists(STATE_FILE):
+            return "Error: Current state file not found."
+            
+        shutil.copy(STATE_FILE, HOME_STATE_FILE)
+        
+        with open(STATE_FILE, 'r') as f:
+            state = json.load(f)
+            
+        # Clear inventory and shopping list for travel
+        state['inventory'] = []
+        state['shoppingList'] = []
+        
+        with open(STATE_FILE, 'w') as f:
+            json.dump(state, f, indent=2)
+            
+        return "Pantry successfully stashed for travel! Inventory and shopping list have been cleared. When you return, just ask me to restore the home pantry."
+    except Exception as e:
+        return f"Error stashing pantry: {str(e)}"
+
+def restore_home_pantry() -> str:
+    """Restores the 'home' state pantry that was previously stashed, overwriting the travel inventory but keeping the latest logs and profile."""
+    try:
+        if not os.path.exists(HOME_STATE_FILE):
+            return "Error: No home state found to restore from."
+            
+        with open(STATE_FILE, 'r') as f:
+            current_state = json.load(f)
+            
+        with open(HOME_STATE_FILE, 'r') as f:
+            home_state = json.load(f)
+            
+        # We only restore the inventory and shopping list from home. We keep the new profile and logs made while traveling!
+        current_state['inventory'] = home_state.get('inventory', [])
+        current_state['shoppingList'] = home_state.get('shoppingList', [])
+        
+        with open(STATE_FILE, 'w') as f:
+            json.dump(current_state, f, indent=2)
+            
+        return "Home pantry and shopping list successfully restored! Welcome back."
+    except Exception as e:
+        return f"Error restoring home pantry: {str(e)}"
+
 def get_current_date() -> str:
     """Returns the current date in YYYY-MM-DD format."""
     return datetime.date.today().strftime("%Y-%m-%d")
@@ -144,9 +191,10 @@ ALWAYS follow these rules:
    - If the user sends an image, determine if it is a grocery haul/receipt OR a cooked meal.
    - For GROCERIES/RECEIPTS: Extract all items, aggregate them by type, and check if they exist in the `inventory` (even if a different brand). DO NOT UPDATE STATE YET. Instead, reply with a single summarized list of the detected items and explicitly ask the user for confirmation (e.g. "Please confirm these additions to your pantry...").
    - For COOKED MEALS: Estimate the quantities, ingredients, and macros (calories, protein, carbs, fat). DO NOT UPDATE STATE YET. Reply with a single summarized list of the estimated ingredients/macros and explicitly ask for confirmation to add to the log and subtract from the pantry.
-   - ONLY when the user explicitly confirms (e.g., replies "yes" or modifies the list), use `update_nutricloud_state` to perform the corresponding action.
+    - ONLY when the user explicitly confirms (e.g., replies "yes" or modifies the list), use `update_nutricloud_state` to perform the corresponding action.
 8. FORMATTING: Use Telegram's HTML syntax for all formatting (<b>bold</b>, <i>italic</i>, <u>underline</u>, <s>strikethrough</s>, <code>inline code</code>, <pre>code block</pre>, <a href="URL">inline URL</a>). NEVER use Markdown asterisks or hashes. NEVER use unsupported HTML tags like <ul>, <ol>, <li>, <p>, <br>, or headers like <h1>. For lists, just use plain text with a dash and a newline (e.g., "- Item 1\n- Item 2").
 9. CONCISENESS & TONE: Be direct and concise. Do NOT ask conversational follow-up questions to keep the conversation going. Never end your messages with questions like "Do you need anything else?", "Shall we proceed?", or "Is there anything else I can adjust?". Just confirm the action and stop.
+10. TRAVEL MODE: If the user indicates they are traveling, use stash_pantry_for_travel() to backup their home inventory and start a fresh one. When they return, use restore_home_pantry() to bring back their home inventory without losing their travel meal logs.
 """
 
 root_agent = Agent(
@@ -154,7 +202,7 @@ root_agent = Agent(
     name='nutricloud_manager',
     description='A specialized dietary assistant that manages the NutriCloud state, suggests meals, generates shopping lists, and updates inventory.',
     instruction=NUTRICLOUD_INSTRUCTION,
-    tools=[get_nutricloud_state, update_nutricloud_state, recalculate_profile_targets, get_current_date]
+    tools=[get_nutricloud_state, update_nutricloud_state, recalculate_profile_targets, get_current_date, stash_pantry_for_travel, restore_home_pantry]
 )
 
 if __name__ == '__main__':
