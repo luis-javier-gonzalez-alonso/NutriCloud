@@ -9,6 +9,7 @@ from google.genai import types
 import shutil
 STATE_FILE = os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'nutricloud_state.json')
 HOME_STATE_FILE = os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'nutricloud_state_home.json')
+CURRENT_CHAT_ID = None
 
 def get_nutricloud_state() -> str:
     """Reads the current state of NutriCloud including profile (goals, macros, diet), inventory, and historical daily logs. Returns JSON string."""
@@ -164,6 +165,27 @@ def get_current_date() -> str:
     """Returns the current date in YYYY-MM-DD format."""
     return datetime.date.today().strftime("%Y-%m-%d")
 
+def send_backup_to_telegram() -> str:
+    """Sends the current NutriCloud state JSON file to the user on Telegram. Call this when the user asks for a backup of their state or asks to download the current state."""
+    try:
+        if not os.path.exists(STATE_FILE):
+            return "Error: No state file found to backup."
+            
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        filename = f"nutricloud_state_{timestamp}.json"
+        
+        global CURRENT_CHAT_ID
+        chat_id = ALLOWED_USER_ID if ALLOWED_USER_ID else CURRENT_CHAT_ID
+        
+        if not chat_id:
+            return "Error: Cannot determine chat ID to send the file."
+            
+        with open(STATE_FILE, 'rb') as f:
+            bot.send_document(chat_id, document=f, visible_file_name=filename)
+        return "Successfully sent the backup file to Telegram."
+    except Exception as e:
+        return f"Error sending backup: {str(e)}"
+
 # Comprehensive Agent Instruction
 NUTRICLOUD_INSTRUCTION = """You are the NutriCloud Manager, an advanced dietary assistant.
 You have direct access to the user's NutriCloud state which includes:
@@ -202,7 +224,7 @@ root_agent = Agent(
     name='nutricloud_manager',
     description='A specialized dietary assistant that manages the NutriCloud state, suggests meals, generates shopping lists, and updates inventory.',
     instruction=NUTRICLOUD_INSTRUCTION,
-    tools=[get_nutricloud_state, update_nutricloud_state, recalculate_profile_targets, get_current_date, stash_pantry_for_travel, restore_home_pantry]
+    tools=[get_nutricloud_state, update_nutricloud_state, recalculate_profile_targets, get_current_date, stash_pantry_for_travel, restore_home_pantry, send_backup_to_telegram]
 )
 
 if __name__ == '__main__':
@@ -236,8 +258,20 @@ if __name__ == '__main__':
     runner = InMemoryRunner(agent=root_agent)
     runner.auto_create_session = True
 
+    @bot.message_handler(commands=['backup', 'state'])
+    def handle_backup_command(message):
+        if ALLOWED_USER_ID and message.from_user.id != ALLOWED_USER_ID:
+            return
+        global CURRENT_CHAT_ID
+        CURRENT_CHAT_ID = message.chat.id
+        bot.send_chat_action(message.chat.id, 'upload_document')
+        send_backup_to_telegram()
+
     @bot.message_handler(content_types=['text', 'photo', 'document'])
     def handle_message(message):
+        global CURRENT_CHAT_ID
+        CURRENT_CHAT_ID = message.chat.id
+        
         if ALLOWED_USER_ID and message.from_user.id != ALLOWED_USER_ID:
             print(f"Ignored message from unauthorized user: {message.from_user.id}")
             return
