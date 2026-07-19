@@ -236,7 +236,7 @@ if __name__ == '__main__':
     runner = InMemoryRunner(agent=root_agent)
     runner.auto_create_session = True
 
-    @bot.message_handler(content_types=['text', 'photo'])
+    @bot.message_handler(content_types=['text', 'photo', 'document'])
     def handle_message(message):
         if ALLOWED_USER_ID and message.from_user.id != ALLOWED_USER_ID:
             print(f"Ignored message from unauthorized user: {message.from_user.id}")
@@ -246,6 +246,23 @@ if __name__ == '__main__':
         bot.send_chat_action(message.chat.id, 'typing')
         try:
             parts = []
+            
+            # Handle direct state JSON upload
+            if message.document:
+                if message.document.mime_type == 'application/json' or message.document.file_name.endswith('.json'):
+                    file_info = bot.get_file(message.document.file_id)
+                    downloaded_file = bot.download_file(file_info.file_path)
+                    try:
+                        json_str = downloaded_file.decode('utf-8')
+                        result = update_nutricloud_state(json_str)
+                        bot.reply_to(message, f"<b>Success:</b> NutriCloud state updated from JSON file.\n<i>{result}</i>", parse_mode='HTML')
+                    except Exception as e:
+                        bot.reply_to(message, f"<b>Error:</b> Failed to process JSON file: {str(e)}", parse_mode='HTML')
+                        
+                    # If there's no additional text/caption, we can stop here
+                    if not message.caption and not message.text:
+                        return
+            
             if message.photo:
                 file_info = bot.get_file(message.photo[-1].file_id)
                 downloaded_file = bot.download_file(file_info.file_path)
