@@ -10,7 +10,8 @@ echo "Initializing NutriCloud Agent..."
 # Ensure we have a virtual environment
 if [ ! -d ".venv" ]; then
     echo "-> Creating Python virtual environment..."
-    python3 -m venv .venv
+    # --system-site-packages allows the venv to see the pre-compiled py3-cryptography we install via apk
+    python3 -m venv --system-site-packages .venv
 fi
 
 echo "-> Activating virtual environment..."
